@@ -22,16 +22,23 @@ contract DeFiProtocol is Ownable {
      */
     uint256 public ethPoolTotalAmount = 0;
 
-    address public ETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
+    address public ETH = 0xC000000000000000000000000000000000000000;
     
     event Approval(address approver, address spender, uint256 amount);
     
     /**
      * @notice The ETH Token address
      */
-    IERC20 private ethToken = IERC20(ETH);
+    IERC20 private ethToken;
 
-    function approve(address spender, uint256 amount) public returns (bool) {
+    function setTokenAddress(address _erc) external {
+        ethToken = IERC20(_erc);
+    }
+
+    /**
+     * @notice Approval method to call before a transferFrom
+     */
+    function approve(address spender, uint256 amount) external returns (bool) {
         ethToken.approve(spender, amount);
         emit Approval(msg.sender, spender, amount);
         return true;
