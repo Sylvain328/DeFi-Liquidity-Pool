@@ -12,6 +12,8 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
  */
 contract DeFiProtocol is Ownable {
 
+    // ::::::::::::: Properties ::::::::::::: //
+
     /**
      * @notice This mapping store the amount of liquidity by address
      */
@@ -28,20 +30,35 @@ contract DeFiProtocol is Ownable {
      */
     IERC20 token;
 
-    constructor(address _erc) {
-        token = IERC20(_erc);
+    // ::::::::::::: Events ::::::::::::: //
+
+    event AmountStaked (address staker, uint256 stakedAmount);
+
+    // ::::::::::::: Methods ::::::::::::: //
+
+    /**
+     * @notice Create erc20 instance that will be used for the liquidity pool
+     * @param _tokenAddress the smart contract address of the erc20 token
+     */
+    constructor(address _tokenAddress) {
+        token = IERC20(_tokenAddress);
     }
 
     /**
-     * @notice Allow to store token in the Liquidity pool
+     * @notice Stake token in the Liquidity pool
      * @dev Refresh the stored amount in the address mapping ethPoolAddressBalances and refresh the total balance of the pool ethPoolTotalAmount
      * @param _amount Total amount to store in the eth liquidity pool
      */
-    function stakeEthTokens(uint256 _amount) payable external {
-        require(_amount > 0, "you can only insert a value greater than 0");
+    function stake(uint256 _amount) payable external {
+        require(_amount > 0, "You can only insert a value greater than 0");
         require(token.transferFrom(msg.sender, address(this), _amount), "You must have the balance in your wallet and approve this contract");
         
+        // Update the tvl of the liquidity pool
         totalValueLocked = totalValueLocked  + _amount;
+
+        // Update the locked amount of the sender
         storedValuePerAddress[msg.sender] = storedValuePerAddress[msg.sender] + _amount;
+        
+        emit AmountStaked(msg.sender, _amount);
     }
 }
