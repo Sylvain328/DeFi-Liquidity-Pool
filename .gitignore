@@ -1,2 +1,4 @@
 .env
 node_modules
+client/src/.App.js.swp
+client/src/contracts/*

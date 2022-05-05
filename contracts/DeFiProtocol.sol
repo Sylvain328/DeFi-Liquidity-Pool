@@ -13,47 +13,35 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 contract DeFiProtocol is Ownable {
 
     /**
-     * @notice This mapping store the amount of eth by address
+     * @notice This mapping store the amount of liquidity by address
      */
-    mapping(address => uint256) ethPoolAddressBalances;
+    mapping(address => uint256) storedValuePerAddress;
 
     /**
-     * @notice The total amount stored in the liquidity pool
+     * @notice The Total Value Locked(TVL) of the liquidity pool
+     * @dev The TVL is public because front may want to display it
      */
-    uint256 public ethPoolTotalAmount = 0;
-
-    address public ETH = 0xC000000000000000000000000000000000000000;
-    
-    event Approval(address approver, address spender, uint256 amount);
+    uint256 public totalValueLocked = 0;
     
     /**
-     * @notice The ETH Token address
+     * @notice The Token to store in the liquidity pool
      */
-    IERC20 private ethToken;
+    IERC20 token;
 
-    function setTokenAddress(address _erc) external {
-        ethToken = IERC20(_erc);
+    constructor(address _erc) {
+        token = IERC20(_erc);
     }
 
     /**
-     * @notice Approval method to call before a transferFrom
-     */
-    function approve(address spender, uint256 amount) external returns (bool) {
-        ethToken.approve(spender, amount);
-        emit Approval(msg.sender, spender, amount);
-        return true;
-    }
-
-    /**
-     * @notice Allow to store eth in the Eth Liquidity pool
+     * @notice Allow to store token in the Liquidity pool
      * @dev Refresh the stored amount in the address mapping ethPoolAddressBalances and refresh the total balance of the pool ethPoolTotalAmount
      * @param _amount Total amount to store in the eth liquidity pool
      */
-    function stakeEthTokens(uint256 _amount) payable external returns(bool) {
-
-        require(ethToken.transferFrom(msg.sender, address(this), _amount), "You don't have enough ETH in your wallet for this transaction");
-        ethPoolTotalAmount = ethPoolTotalAmount  + _amount;
-        ethPoolAddressBalances[msg.sender] = ethPoolAddressBalances[msg.sender] + _amount;
-        return true;
+    function stakeEthTokens(uint256 _amount) payable external {
+        require(_amount > 0, "you can only insert a value greater than 0");
+        require(token.transferFrom(msg.sender, address(this), _amount), "You must have the balance in your wallet and approve this contract");
+        
+        totalValueLocked = totalValueLocked  + _amount;
+        storedValuePerAddress[msg.sender] = storedValuePerAddress[msg.sender] + _amount;
     }
 }
