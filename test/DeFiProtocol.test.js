@@ -9,12 +9,13 @@ contract('DeFiProtocol', accounts => {
 
     context("Methods tests", () => {
 
-        beforeEach(async () => {
-            HwTokenInstance = await HwToken.new({from:owner});
-            DeFiProtocolInstance = await DeFiProtocol.new(HwTokenInstance.address, {from:owner});
-        });
-
+        //::::::::::::::: Stake Method :::::::::::::::::/
         describe("stake() method tests", () => {
+
+            beforeEach(async () => {
+                HwTokenInstance = await HwToken.new({from:owner});
+                DeFiProtocolInstance = await DeFiProtocol.new(HwTokenInstance.address, {from:owner});
+            });    
 
             describe("stake() method stake cases", () => {
 
@@ -39,7 +40,7 @@ contract('DeFiProtocol', accounts => {
 
                 it("should revert when you try to stake 0 amount", async () => {
                     await HwTokenInstance.approve(DeFiProtocolInstance.address, 50, {from: owner});
-                    await expectRevert(DeFiProtocolInstance.stake(0, {from: owner}), "You can only insert a value greater than 0");
+                    await expectRevert(DeFiProtocolInstance.stake(0, {from: owner}), "Only amount above zero are authorized");
                 });
                 
                 it("should revert when you don't approve the contract", async () => {
@@ -62,5 +63,52 @@ contract('DeFiProtocol', accounts => {
                 });
             });
         });
+
+        //::::::::::::::: Unstake Method :::::::::::::::::/
+
+        describe("unstake() method tests", () => {
+
+            beforeEach(async () => {
+                HwTokenInstance = await HwToken.new({from:owner});
+                DeFiProtocolInstance = await DeFiProtocol.new(HwTokenInstance.address, {from:owner});
+                const stakedValue = 50;
+                await HwTokenInstance.approve(DeFiProtocolInstance.address, stakedValue, {from: owner});
+                await DeFiProtocolInstance.stake(stakedValue, {from: owner});
+            });    
+
+            describe("unstake() method unstake cases", () => {
+
+                it("should unstake 50 in the liquidity pool, tvl should be 0", async () => {
+                    await DeFiProtocolInstance.unstake(50, {from: owner});
+                    const tvl = await DeFiProtocolInstance.totalValueLocked.call();
+                    expect(new BN(tvl)).to.be.bignumber.equal(new BN(0));
+                });
+
+                it("should unstake 25 in the liquidity pool, TVL should be 25", async () => {
+                    await DeFiProtocolInstance.unstake(25, {from: owner});
+                    const tvl = await DeFiProtocolInstance.totalValueLocked.call();
+                    expect(new BN(tvl)).to.be.bignumber.equal(new BN(25));
+                });
+            });
+            
+            describe("unstake() method revert cases", () => {
+
+                it("should revert when you try to unstake 0 amount", async () => {
+                    await expectRevert(DeFiProtocolInstance.unstake(0, {from: owner}), "Only amount above zero are authorized");
+                });
+                
+                it("should revert when you try to unstake an amount bigger than your staked amount", async () => {
+                    await expectRevert(DeFiProtocolInstance.unstake(100, {from: owner}), "You didn't stored this amount in the pool");
+                });
+            });
+
+            describe("unstake() method revert cases", () => {
+
+                it("should emit an event when amount is properly unstaked", async () => {
+                    expectEvent(await DeFiProtocolInstance.unstake(10, {from: owner}), "AmountUnstaked", {staker: owner, unstakedAmount: new BN(10)});
+                });
+            });
+        });
+
     });
 });

@@ -27,12 +27,35 @@ contract DeFiProtocol is Ownable {
     
     /**
      * @notice The Token to store in the liquidity pool
+     * @dev Initialized on the constructor
      */
     IERC20 token;
 
+    // ::::::::::::: Modifiers ::::::::::::: //
+
+    /**
+     * @notice Modifier that allow only amount greater than zero to be staked or unstaked
+     */
+    modifier onlyAmountGreaterThanZero(uint256 _amount) {
+        require(_amount > 0, "Only amount above zero are authorized");
+        _;
+    }
+
     // ::::::::::::: Events ::::::::::::: //
 
+    /**
+     * @notice Event informing an amount was staked in the Liquidity Pool
+     * @param staker The address that staked
+     * @param stakedAmount The amount that has been staked
+     */
     event AmountStaked (address staker, uint256 stakedAmount);
+
+    /**
+     * @notice Event informing an amount was unstaked in the Liquidity Pool
+     * @param staker The address that unstaked
+     * @param unstakedAmount The amount that has been unstaked
+     */
+    event AmountUnstaked (address staker, uint256 unstakedAmount);
 
     // ::::::::::::: Methods ::::::::::::: //
 
@@ -46,10 +69,10 @@ contract DeFiProtocol is Ownable {
 
     /**
      * @notice Stake token in the Liquidity pool
-     * @dev Refresh the stored amount in the address mapping ethPoolAddressBalances and refresh the total balance of the pool ethPoolTotalAmount
-     * @param _amount Total amount to store in the eth liquidity pool
+     * @dev Refresh the stored amount in the address mapping storedValuePerAddress and refresh the TVL
+     * @param _amount Total amount to store in the liquidity pool
      */
-    function stake(uint256 _amount) payable external {
+    function stake(uint256 _amount) payable external onlyAmountGreaterThanZero(_amount) {
         require(_amount > 0, "You can only insert a value greater than 0");
         require(token.transferFrom(msg.sender, address(this), _amount), "You must have the balance in your wallet and approve this contract");
         
@@ -61,4 +84,26 @@ contract DeFiProtocol is Ownable {
         
         emit AmountStaked(msg.sender, _amount);
     }
+
+    /**
+     * @notice Unstake the tokens in the Liquidity pool, user can retrieve their tokens
+     * @dev Refresh the stored amount in the address mapping storedValuePerAddress and refresh the TVL
+     * @param _amount Total amount to unstake from the liquidity pool
+     */
+    function unstake(uint256 _amount) payable external onlyAmountGreaterThanZero(_amount) {
+        // Check if the sender have this amount in pool
+        require(storedValuePerAddress[msg.sender] >= _amount, "You didn't stored this amount in the pool");
+
+        // Update the tvl of the liquidity pool
+        totalValueLocked = totalValueLocked  - _amount;
+
+        // Update the locked amount of the sender
+        storedValuePerAddress[msg.sender] = storedValuePerAddress[msg.sender] - _amount;
+
+        // Send the token back to the sender
+        token.transfer(msg.sender, _amount);
+        
+        emit AmountUnstaked(msg.sender, _amount);
+    }
+
 }
