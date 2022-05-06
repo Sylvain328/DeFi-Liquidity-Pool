@@ -110,5 +110,43 @@ contract('DeFiProtocol', accounts => {
             });
         });
 
+        describe("getStakedAmount() method tests", () => {
+
+            beforeEach(async () => {
+                HwTokenInstance = await HwToken.new({from:owner});
+                DeFiProtocolInstance = await DeFiProtocol.new(HwTokenInstance.address, {from:owner});
+                const stakedValue = 50;
+                await HwTokenInstance.approve(DeFiProtocolInstance.address, stakedValue, {from: owner});
+                await DeFiProtocolInstance.stake(stakedValue, {from: owner});
+            }); 
+
+            it("should return 50 token staked", async () => {
+                const stakedAmount = await DeFiProtocolInstance.getStakedAmount({from: owner});
+                expect(new BN(stakedAmount)).to.be.bignumber.equal(new BN(50));
+            });
+
+            it("should return 75 token staked if user restake 25 tokens", async () => {
+                const toStake = 25; 
+                await HwTokenInstance.approve(DeFiProtocolInstance.address, toStake, {from: owner});
+                await DeFiProtocolInstance.stake(toStake, {from: owner});
+                const newStakedAmount = await DeFiProtocolInstance.getStakedAmount({from: owner});
+                expect(new BN(newStakedAmount)).to.be.bignumber.equal(new BN(75));
+            });
+
+            it("should return 40 token staked if user unstake 10 tokens", async () => {
+                const toUnstake = 10; 
+                await DeFiProtocolInstance.unstake(toUnstake, {from: owner});
+                const newStakedAmount = await DeFiProtocolInstance.getStakedAmount({from: owner});
+                expect(new BN(newStakedAmount)).to.be.bignumber.equal(new BN(40));
+            });
+
+            it("should return 0 token staked if user unstake all tokens", async () => {
+                const toUnstake = 50; 
+                await DeFiProtocolInstance.unstake(toUnstake, {from: owner});
+                const newStakedAmount = await DeFiProtocolInstance.getStakedAmount({from: owner});
+                expect(new BN(newStakedAmount)).to.be.bignumber.equal(new BN(0));
+            });
+        });
+
     });
 });
