@@ -4,6 +4,7 @@ pragma solidity 0.8.13;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 /**
  * @title Hello World DeFi Protocol
@@ -30,6 +31,18 @@ contract DeFiProtocol is Ownable {
      * @dev Initialized on the constructor
      */
     IERC20 token;
+
+    /**
+     * @notice Retrieve the token price
+     * @dev Use Chainlink to retrieve the USD price of the token
+     */
+    AggregatorV3Interface internal priceFeed;
+
+    /**
+     * @notice Token multiplier to give a price on the Hwt token
+     * @dev As our Hwt token don't have any value on the market, we use a basic multiplier
+     */
+    uint64 customTokenMultiplier = 800000000000000000;
 
     // ::::::::::::: Modifiers ::::::::::::: //
 
@@ -65,6 +78,8 @@ contract DeFiProtocol is Ownable {
      */
     constructor(address _tokenAddress) {
         token = IERC20(_tokenAddress);
+        // Link/USD price feed
+        priceFeed = AggregatorV3Interface(0x2c1d072e956AFFC0D435Cb7AC38EF18d24d9127c);
     }
 
     /**
@@ -106,4 +121,30 @@ contract DeFiProtocol is Ownable {
         emit AmountUnstaked(msg.sender, _amount);
     }
 
+    /**
+     * @notice Get the msg.sender token staked amount
+     * @return stakedAmount token staked by msg.sender
+     */
+    function getStakedAmount() external view returns (uint256 stakedAmount) {
+        return(storedValuePerAddress[msg.sender]);
+    }
+
+    /**
+     * @notice Get the token price in USD
+     * @dev USD Price is retrieved thanks to Chainlink
+     * @dev Can't be unit tested because of Ganache
+     * @return price price of the token
+     */
+    function getTokenPrice() external view returns (int price) {
+
+        (
+            /*uint80 roundID*/,
+            int price,
+            /*uint startedAt*/,
+            /*uint timeStamp*/,
+            /*uint80 answeredInRound*/
+        ) = priceFeed.latestRoundData();
+
+        return(price);
+    }
 }
