@@ -42,13 +42,17 @@ class App extends Component {
       console.error(error);
     }
   };
+  /** Get the reward Amount of the HWT Token Price */
+  getRewardAmount = async() => {
+    return await this.state.contract.methods.getRewardAmount.call({from: this.state.account});
+  }
 
   render() {
     if (!this.state.web3) {
       return <div>Loading Web3, accounts, and contract...</div>;
     }
     return (
-      <Header account={this.state.account} isOwner={this.state.isOwner} />
+      <Header account={this.state.account} isOwner={this.state.isOwner} getPrice={this.getRewardAmount} />
     );
   }
 }
