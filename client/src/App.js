@@ -17,6 +17,10 @@ class App extends Component {
       // Use web3 to get the user's accounts.
       const accounts = await web3.eth.getAccounts();
 
+      const owner = await instance.methods.owner().call();
+      const isOwner = owner == accounts[0];
+
+  
       // Get the contract instance.
       const networkId = await web3.eth.net.getId();
       const deployedNetwork = DefiProtocol.networks[networkId];
@@ -27,7 +31,10 @@ class App extends Component {
 
       // Set web3, accounts, and contract to the state, and then proceed with an
       // example of interacting with the contract's methods.
-      this.setState({ web3, accounts, contract: instance }, this.runExample);
+      this.setState({ web3, 
+        account: owner, 
+        isOwner: isOwner,
+        contract: instance });
     } catch (error) {
       // Catch any errors for any of the above operations.
       alert(
