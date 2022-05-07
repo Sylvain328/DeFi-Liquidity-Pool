@@ -20,7 +20,6 @@ class App extends Component {
       const owner = await instance.methods.owner().call();
       const isOwner = owner == accounts[0];
 
-  
       // Get the contract instance.
       const networkId = await web3.eth.net.getId();
       const deployedNetwork = DefiProtocol.networks[networkId];
