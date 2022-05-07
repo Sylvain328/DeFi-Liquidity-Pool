@@ -1,4 +1,5 @@
 import React from 'react';
+import RateConverter from "../utils/rateConverter.js";
 
 export default class Header extends React.Component {
     state={price:0}
@@ -8,7 +9,7 @@ export default class Header extends React.Component {
     componentDidMount = async () => {
         debugger;
         const price= await this.props.getPrice();
-        this.setState({price:price.hwtUsdValue});
+        this.setState({price: RateConverter.convert(price.hwtUsdValue)});
     }
     render(){
         return(
@@ -18,7 +19,7 @@ export default class Header extends React.Component {
                 </div>
                 <div>
                     <div>{this.props.account}</div>
-                    <div> {this.state.price} </div>
+                    <div>1 HWT = {this.state.price} Usd</div>
                     <div className={`OwnerStatus ${this.props.isOwner ? "" : "HideComponent"}`}>owner</div>
                     
                 </div>
