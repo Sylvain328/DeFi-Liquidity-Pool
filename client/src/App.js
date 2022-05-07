@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import DefiProtocol from "./contracts/DefiProtocol.json";
+import DefiProtocol from "./contracts/DeFiProtocol.json";
 import HWT from "./contracts/HWT.json";
 import getWeb3 from "./getWeb3";
 import Header from "./components/Header.js";
@@ -17,9 +17,6 @@ class App extends Component {
       // Use web3 to get the user's accounts.
       const accounts = await web3.eth.getAccounts();
 
-      const owner = await instance.methods.owner().call();
-      const isOwner = owner == accounts[0];
-
       // Get the contract instance.
       const networkId = await web3.eth.net.getId();
       const deployedNetwork = DefiProtocol.networks[networkId];
@@ -27,6 +24,9 @@ class App extends Component {
         DefiProtocol.abi,
         deployedNetwork && deployedNetwork.address,
       );
+      
+      const owner = await instance.methods.owner().call();
+      const isOwner = owner == accounts[0];
 
       // Set web3, accounts, and contract to the state, and then proceed with an
       // example of interacting with the contract's methods.
