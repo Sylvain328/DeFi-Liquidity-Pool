@@ -21,7 +21,7 @@ contract DeFiProtocol is Ownable {
      */
     struct StakerData {
         uint256 stakedAmount; 
-        uint256 lastAmountTimestamp;
+        uint256 updateTimestamp;
         uint256 reward;
     }
 
@@ -73,17 +73,21 @@ contract DeFiProtocol is Ownable {
 
     /**
      * @notice Event informing total amount staked in the Liquidity Pool
-     * @param staker The address that staked
      * @param stakedAmount The amount that has been staked
      */
-    event AmountStaked (address staker, uint stakedAmount);
+    event AmountStaked (uint stakedAmount);
 
     /**
      * @notice Event informing an amount was unstaked in the Liquidity Pool
-     * @param staker The address that unstaked
      * @param unstakedAmount The amount that has been unstaked
      */
-    event AmountUnstaked (address staker, uint unstakedAmount);
+    event AmountUnstaked (uint unstakedAmount);
+
+    /** 
+     * @notice Event informing a reward was send
+     * @param rewardClaimedAmount The amount that has been offered
+     */
+    event RewardOffered (uint rewardClaimedAmount);
 
     // ::::::::::::: Methods ::::::::::::: //
 
@@ -111,16 +115,16 @@ contract DeFiProtocol is Ownable {
 
         // if tokens are already stored, update reward before the new stake
         if(stakerData.stakedAmount > 0) {
-            stakerData.reward = stakerData.reward + (((block.timestamp - stakerData.lastAmountTimestamp) * rewardPerSecond * stakerData.stakedAmount) / 1e18);
+            stakerData.reward = computeReward(stakerData);
         }
 
         stakerData.stakedAmount = stakerData.stakedAmount + _amount;
-        stakerData.lastAmountTimestamp = block.timestamp; 
+        stakerData.updateTimestamp = block.timestamp; 
 
         // Update the tvl of the liquidity pool
         totalValueLocked = totalValueLocked  + _amount;
 
-        emit AmountStaked(msg.sender, stakerData.stakedAmount);
+        emit AmountStaked(stakerData.stakedAmount);
     }
 
     /**
@@ -129,19 +133,25 @@ contract DeFiProtocol is Ownable {
      * @param _amount Total amount to unstake from the liquidity pool
      */
     function unstake(uint256 _amount) payable external onlyAmountGreaterThanZero(_amount) {
+        
+        StakerData storage stakerData = stakerDataPerAddress[msg.sender];
+        
         // Check if the sender have this amount in pool
-        require(stakerDataPerAddress[msg.sender].stakedAmount >= _amount, "You didn't stored this amount in the pool");
+        require(_amount <= stakerData.stakedAmount, "You didn't stored this amount in the pool");
+
+        // Update the reward first ! Then update staked amount and timestamp
+        stakerData.reward = computeReward(stakerData);
+
+        stakerData.stakedAmount = stakerData.stakedAmount - _amount;
+        stakerData.updateTimestamp = block.timestamp;
 
         // Update the tvl of the liquidity pool
         totalValueLocked = totalValueLocked  - _amount;
 
-        // Update the locked amount of the sender
-        stakerDataPerAddress[msg.sender].stakedAmount = stakerDataPerAddress[msg.sender].stakedAmount - _amount;
-
         // Send the token back to the sender
         token.transfer(msg.sender, _amount);
         
-        emit AmountUnstaked(msg.sender, _amount);
+        emit AmountUnstaked(_amount);
     }
 
     /**
@@ -150,6 +160,10 @@ contract DeFiProtocol is Ownable {
      */
     function getStakedAmount() external view returns (uint stakedAmount) {
         return(stakerDataPerAddress[msg.sender].stakedAmount);
+    }
+
+    function getTimeStamp() external view returns (uint actualStamp, uint userStamp) {
+        return(block.timestamp, stakerDataPerAddress[msg.sender].updateTimestamp);
     }
 
     /**
@@ -176,10 +190,48 @@ contract DeFiProtocol is Ownable {
      * @dev lastUpdateAmount return the last time a stake has been done, useful to compute reward on a frontend app
      * @return reward The reward computed by the contract
      * @return hwtUsdValue The Usd value of the reward
-     * @return lastUpdateTimestamp Last timestamp the user stake token
      */
-    function getRewardAmount() external view returns (uint reward, uint hwtUsdValue, uint lastUpdateTimestamp) {
+    function getRewardAmount() external view returns (uint reward, uint hwtUsdValue) {
+        return(computeReward(stakerDataPerAddress[msg.sender]), hwtTokenUsdValue);
+    }
 
-        return(stakerDataPerAddress[msg.sender].reward, hwtTokenUsdValue, stakerDataPerAddress[msg.sender].lastAmountTimestamp);
+    /**
+     * @notice Compute the reward depending on time and existant reward
+     * @dev Timestamp are in seconds
+     * @param _stakerData Data of the staker
+     * @return rewardAmount The computed reward amount
+     */
+    function computeReward(StakerData memory _stakerData) private view returns(uint rewardAmount) {
+        
+        uint reward = ((block.timestamp - _stakerData.updateTimestamp) * rewardPerSecond * _stakerData.stakedAmount);
+
+        if(reward > 0) {
+            return _stakerData.reward + (reward / 1e18);
+        }
+        else {
+            return _stakerData.reward;
+        }
+    }
+
+    /**
+     * @notice Send then reward to the msg.sender
+     */
+    function claimReward() external {
+
+        StakerData storage stakerData = stakerDataPerAddress[msg.sender];
+
+        // Compute the reward
+        uint reward = computeReward(stakerData);
+
+        require(reward > 0, "No reward to claim");
+        
+        // Update the timestamp and the reward amount
+        stakerData.updateTimestamp = block.timestamp;
+        stakerData.reward = 0;
+
+        // Send reward tokens to the msg.sender
+        token.transfer(msg.sender, reward);
+
+        emit RewardOffered(reward);
     }
 }
