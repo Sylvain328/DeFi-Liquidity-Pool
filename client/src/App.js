@@ -7,7 +7,7 @@ import Header from "./components/Header.js";
 import "./App.css";
 
 class App extends Component {
-  state = { storageValue: 0, web3: null, accounts: null, contract: null };
+  state = { storageValue: 0, web3: null, account: null, contract: null, isOwner: null };
 
   componentDidMount = async () => {
     try {
