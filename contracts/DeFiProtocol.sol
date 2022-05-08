@@ -37,7 +37,7 @@ contract DeFiProtocol is Ownable {
      * @notice The Total Value Locked(TVL) of the liquidity pool
      * @dev The TVL is public because front may want to display it
      */
-    uint256 public totalValueLocked = 0;
+    uint256 public totalValueLocked;
     
     /**
      * @notice The Token to store in the liquidity pool
@@ -55,8 +55,11 @@ contract DeFiProtocol is Ownable {
      * @notice Token multiplier to give a price on the Hwt token
      * @dev As our Hwt token don't have any value on the market, we use a basic multiplier
      */
-    uint hwtTokenUsdValue = 931500000000000000;
+    uint public hwtTokenUsdValue = 931500000000000000;
 
+    /**
+     * @notice reward per second for the liquidity pool
+     */
     uint rewardPerSecond = 925925925925;
 
     // ::::::::::::: Modifiers ::::::::::::: //
@@ -187,12 +190,10 @@ contract DeFiProtocol is Ownable {
 
     /**
      * @notice Get the reward for msg.sender
-     * @dev lastUpdateAmount return the last time a stake has been done, useful to compute reward on a frontend app
      * @return reward The reward computed by the contract
-     * @return hwtUsdValue The Usd value of the reward
      */
-    function getRewardAmount() external view returns (uint reward, uint hwtUsdValue) {
-        return(computeReward(stakerDataPerAddress[msg.sender]), hwtTokenUsdValue);
+    function getRewardAmount() external view returns (uint reward) {
+        return(computeReward(stakerDataPerAddress[msg.sender]));
     }
 
     /**

@@ -44,8 +44,8 @@ class App extends Component {
   };
   
   /** Get the reward Amount of the HWT Token Price */
-  getRewardAmount = async() => {
-    return await this.state.contract.methods.getRewardAmount().call({from: this.state.account});
+  getHwtTokenUsdValue = async() => {
+    return await this.state.contract.methods.hwtTokenUsdValue().call({from: this.state.account});
   }
 
   render() {
@@ -53,7 +53,7 @@ class App extends Component {
       return <div>Loading Web3, accounts, and contract...</div>;
     }
     return (
-      <Header account={this.state.account} isOwner={this.state.isOwner} getPrice={this.getRewardAmount} />
+      <Header account={this.state.account} isOwner={this.state.isOwner} getHwtPrice={this.getHwtTokenUsdValue} />
     );
   }
 }

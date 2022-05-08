@@ -6,11 +6,12 @@ export default class Header extends React.Component {
     constructor(props) {
         super(props);
     }
+    
     componentDidMount = async () => {
-        debugger;
-        const price= await this.props.getPrice();
+        const price= await this.props.getHwtPrice();
         this.setState({price: RateConverter.convert(price.hwtUsdValue)});
     }
+
     render(){
         return(
             <div className="Header">

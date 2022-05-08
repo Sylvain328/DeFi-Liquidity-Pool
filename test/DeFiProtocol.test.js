@@ -6,6 +6,11 @@ const { expect } = require('chai');
 contract('DeFiProtocol', accounts => {
 
     const owner = accounts[0];
+    const baseAmountOfTokenStaked = 5
+
+    convertEthToWei = (ethAmount) => {
+        return BigInt(ethAmount * 1e18);
+    }
 
     context("Methods tests", () => {
 
@@ -18,8 +23,8 @@ contract('DeFiProtocol', accounts => {
                 DeFiProtocolInstance = await DeFiProtocol.new(HwTokenInstance.address, {from:owner});
             });    
 
-            it("should stake 50 token in the liquidity pool", async () => {
-                const valueToStake = BigInt(5000000000000000000);
+            it("should stake 5 token in the liquidity pool", async () => {
+                const valueToStake = convertEthToWei(5);
                 await HwTokenInstance.approve(DeFiProtocolInstance.address, valueToStake, {from: owner});
                 await DeFiProtocolInstance.stake(valueToStake, {from: owner});
                 const tvl = await DeFiProtocolInstance.totalValueLocked.call();
@@ -27,8 +32,8 @@ contract('DeFiProtocol', accounts => {
             });
 
             it("should stake an amount smaller than approved amount ", async () => {
-                const valueToStake = BigInt(5000000000000000000);
-                await HwTokenInstance.approve(DeFiProtocolInstance.address, BigInt(10000000000000000000), {from: owner});
+                const valueToStake = convertEthToWei(5);
+                await HwTokenInstance.approve(DeFiProtocolInstance.address, convertEthToWei(10), {from: owner});
                 await DeFiProtocolInstance.stake(valueToStake, {from: owner});
                 const tvl = await DeFiProtocolInstance.totalValueLocked.call();
                 expect(new BN(tvl)).to.be.bignumber.equal(new BN(valueToStake));
@@ -37,25 +42,25 @@ contract('DeFiProtocol', accounts => {
             describe("Revert cases", () => {
 
                 it("should revert when you try to stake 0 amount", async () => {
-                    await HwTokenInstance.approve(DeFiProtocolInstance.address, BigInt(5000000000000000000), {from: owner});
+                    await HwTokenInstance.approve(DeFiProtocolInstance.address, convertEthToWei(5), {from: owner});
                     await expectRevert(DeFiProtocolInstance.stake(0, {from: owner}), "Only amount above zero are authorized");
                 });
                 
                 it("should revert when you don't approve the contract", async () => {
-                    await expectRevert(DeFiProtocolInstance.stake(BigInt(5000000000000000000), {from: owner}), "ERC20: insufficient allowance.");
+                    await expectRevert(DeFiProtocolInstance.stake(convertEthToWei(5), {from: owner}), "ERC20: insufficient allowance.");
                 });
     
                 it("should revert when try to stake amount bigger than approved amount", async () => {
-                    await HwTokenInstance.approve(DeFiProtocolInstance.address, BigInt(5000000000000000000), {from: owner});
-                    await expectRevert(DeFiProtocolInstance.stake(BigInt(10000000000000000000), {from: owner}), "ERC20: insufficient allowance.");
+                    await HwTokenInstance.approve(DeFiProtocolInstance.address, convertEthToWei(5), {from: owner});
+                    await expectRevert(DeFiProtocolInstance.stake(convertEthToWei(10), {from: owner}), "ERC20: insufficient allowance.");
                 });
             });
 
             describe("Event cases", () => {
 
                 it("should emit an event when amount is properly staked", async () => {
-                    const valueToStake = BigInt(5000000000000000000);
-                    await HwTokenInstance.approve(DeFiProtocolInstance.address, BigInt(10000000000000000000), {from: owner});
+                    const valueToStake = convertEthToWei(5);
+                    await HwTokenInstance.approve(DeFiProtocolInstance.address, convertEthToWei(10), {from: owner});
                     
                     expectEvent(await DeFiProtocolInstance.stake(valueToStake, {from: owner}), "AmountStaked", {stakedAmount: new BN(valueToStake)});
                 });
@@ -69,21 +74,21 @@ contract('DeFiProtocol', accounts => {
             beforeEach(async () => {
                 HwTokenInstance = await HwToken.new({from:owner});
                 DeFiProtocolInstance = await DeFiProtocol.new(HwTokenInstance.address, {from:owner});
-                const stakedValue = BigInt(5000000000000000000);
+                const stakedValue = convertEthToWei(5);
                 await HwTokenInstance.approve(DeFiProtocolInstance.address, stakedValue, {from: owner});
                 await DeFiProtocolInstance.stake(stakedValue, {from: owner});
             });    
 
-            it("should unstake 50 token in the liquidity pool, TVL should be 0", async () => {
-                await DeFiProtocolInstance.unstake(BigInt(5000000000000000000), {from: owner});
+            it("should unstake 5 token in the liquidity pool, TVL should be 0", async () => {
+                await DeFiProtocolInstance.unstake(convertEthToWei(5), {from: owner});
                 const tvl = await DeFiProtocolInstance.totalValueLocked.call();
                 expect(new BN(tvl)).to.be.bignumber.equal(new BN(0));
             });
 
-            it("should unstake 25 token in the liquidity pool, TVL should be 25", async () => {
-                await DeFiProtocolInstance.unstake(BigInt(2500000000000000000), {from: owner});
+            it("should unstake 2.5 token in the liquidity pool, TVL should be 2.5", async () => {
+                await DeFiProtocolInstance.unstake(convertEthToWei(2.5), {from: owner});
                 const tvl = await DeFiProtocolInstance.totalValueLocked.call();
-                expect(new BN(tvl)).to.be.bignumber.equal(new BN(BigInt(2500000000000000000)));
+                expect(new BN(tvl)).to.be.bignumber.equal(new BN(convertEthToWei(2.5)));
             });
             
             describe("Revert cases", () => {
@@ -93,14 +98,14 @@ contract('DeFiProtocol', accounts => {
                 });
                 
                 it("should revert when you try to unstake an amount bigger than your staked amount", async () => {
-                    await expectRevert(DeFiProtocolInstance.unstake(BigInt(10000000000000000000), {from: owner}), "You didn't stored this amount in the pool");
+                    await expectRevert(DeFiProtocolInstance.unstake(convertEthToWei(10), {from: owner}), "You didn't stored this amount in the pool");
                 });
             });
 
             describe("Event cases", () => {
 
                 it("should emit an event when amount is properly unstaked", async () => {
-                    expectEvent(await DeFiProtocolInstance.unstake(BigInt(5000000000000000000), {from: owner}), "AmountUnstaked", {unstakedAmount: new BN(BigInt(5000000000000000000))});
+                    expectEvent(await DeFiProtocolInstance.unstake(convertEthToWei(5), {from: owner}), "AmountUnstaked", {unstakedAmount: new BN(BigInt(5000000000000000000))});
                 });
             });
         });
@@ -112,40 +117,40 @@ contract('DeFiProtocol', accounts => {
             beforeEach(async () => {
                 HwTokenInstance = await HwToken.new({from:owner});
                 DeFiProtocolInstance = await DeFiProtocol.new(HwTokenInstance.address, {from:owner});
-                const stakedValue = BigInt(5000000000000000000);
+                const stakedValue = convertEthToWei(5);
                 await HwTokenInstance.approve(DeFiProtocolInstance.address, stakedValue, {from: owner});
                 await DeFiProtocolInstance.stake(stakedValue, {from: owner});
             }); 
 
-            it("should return 50 token token staked", async () => {
+            it("should return 5 token token staked", async () => {
                 const stakedAmount = await DeFiProtocolInstance.getStakedAmount({from: owner});
-                expect(new BN(stakedAmount)).to.be.bignumber.equal(new BN(BigInt(5000000000000000000)));
+                expect(new BN(stakedAmount)).to.be.bignumber.equal(new BN(convertEthToWei(5)));
             });
 
-            it("should return 75 token staked if user restake 25 tokens", async () => {
-                const toStake = BigInt(2500000000000000000); 
+            it("should return 7.5 token staked if user restake 2.5 tokens", async () => {
+                const toStake = convertEthToWei(2.5); 
                 await HwTokenInstance.approve(DeFiProtocolInstance.address, toStake, {from: owner});
                 await DeFiProtocolInstance.stake(toStake, {from: owner});
                 const newStakedAmount = await DeFiProtocolInstance.getStakedAmount({from: owner});
-                expect(new BN(newStakedAmount)).to.be.bignumber.equal(new BN(BigInt(7500000000000000000)));
+                expect(new BN(newStakedAmount)).to.be.bignumber.equal(new BN(convertEthToWei(7.5)));
             });
 
             it("should return 4 token staked if user unstake 1 token", async () => {
-                const toUnstake = BigInt(1000000000000000000); 
+                const toUnstake = convertEthToWei(1); 
                 await DeFiProtocolInstance.unstake(toUnstake, {from: owner});
                 const newStakedAmount = await DeFiProtocolInstance.getStakedAmount({from: owner});
-                expect(new BN(newStakedAmount)).to.be.bignumber.equal(new BN(BigInt(4000000000000000000)));
+                expect(new BN(newStakedAmount)).to.be.bignumber.equal(new BN(convertEthToWei(4)));
             });
 
             it("should return 0 token staked if user unstake all tokens", async () => {
-                const toUnstake = BigInt(5000000000000000000); 
+                const toUnstake = convertEthToWei(5); 
                 await DeFiProtocolInstance.unstake(toUnstake, {from: owner});
                 const newStakedAmount = await DeFiProtocolInstance.getStakedAmount({from: owner});
                 expect(new BN(newStakedAmount)).to.be.bignumber.equal(new BN(0));
             });
         });
 
-        // //::::::::::::::: getRewardAmount Method :::::::::::::::::/
+        //::::::::::::::: getRewardAmount Method :::::::::::::::::/
 
         describe("getRewardAmount() method tests", () => {
             
@@ -157,42 +162,32 @@ contract('DeFiProtocol', accounts => {
                 await DeFiProtocolInstance.stake(stakedValue, {from: owner});
             }); 
 
-            it("should return 0 reward", async () => {
+            it("should return 0 reward if timestamp is didn't move", async () => {
                 const rewardData = await DeFiProtocolInstance.getRewardAmount({from: owner});
                 expect(new BN(rewardData.reward)).to.be.bignumber.equal(new BN(0));
             });
 
-            it("should return rewards above 0", async () => {
+            it("should return rewards above 0 if tblock timestamp move", async () => {
                 
                 // Move the timestamp and mine a new block
                 await time.increase(15);
+                const test = await DeFiProtocolInstance.getStakedAmount({from: owner});
 
-                const rewardData = await DeFiProtocolInstance.getRewardAmount({from: owner});
-                expect(new BN(rewardData.reward)).to.be.bignumber.above(new BN(0));
+                // get the new reward
+                const newRewardValue = await DeFiProtocolInstance.getRewardAmount({from: owner});
+                expect(new BN(newRewardValue)).to.be.bignumber.above(new BN(0));
             });
 
-            it("should return 0.9315 Usd token value", async () => {
-                const rewardData = await DeFiProtocolInstance.getRewardAmount({from: owner});
-                expect(new BN(rewardData.hwtUsdValue)).to.be.bignumber.equal(new BN(BigInt(931500000000000000)));
-            });
-
-            it("should return 0 reward when rewards was just claimed and stake is void", async () => {
+            it("should return 0 reward when rewards was just claimed", async () => {
                 
                 // Move the timestamp and mine a new block
                 await time.increase(15);
-
-                // Remove full value and staked data
-                let newRewardValue = await DeFiProtocolInstance.getRewardAmount({from: owner});
-
-                await DeFiProtocolInstance.unstake(BigInt(5000000000000000000), {from: owner});
-
-                // Send liquidity to contrat, to claim rewards, we will provide with account 1
-                await HwTokenInstance.approve(DeFiProtocolInstance.address, BigInt(5000000000000000000), {from: accounts[1]});
-                await DeFiProtocolInstance.stake(BigInt(5000000000000000000), {from: accounts[1]});
                 
+                // Claim the reward
                 await DeFiProtocolInstance.claimReward({from: owner});
 
-                newRewardValue = await DeFiProtocolInstance.getRewardAmount({from: owner});
+                // get the new reward
+                const newRewardValue = await DeFiProtocolInstance.getRewardAmount({from: owner});
                 expect(new BN(newRewardValue.reward)).to.be.bignumber.equal(new BN(0));
 
             });
@@ -234,6 +229,21 @@ contract('DeFiProtocol', accounts => {
                     await DeFiProtocolInstance.claimReward({from: owner})
                     await expectRevert(DeFiProtocolInstance.claimReward({from: owner}), "No reward to claim");
                 });
+            });
+        });
+
+        //::::::::::::::: hwtTokenUsdValue property :::::::::::::::::/
+
+        describe("hwtTokenUsdValue property tests", () => {
+
+            beforeEach(async () => {
+                HwTokenInstance = await HwToken.new({from:owner});
+                DeFiProtocolInstance = await DeFiProtocol.new(HwTokenInstance.address, {from:owner});
+            }); 
+
+            it("should return 0.9315 Usd token value", async () => {
+                const value = await DeFiProtocolInstance.hwtTokenUsdValue.call();
+                expect(new BN(value)).to.be.bignumber.equal(new BN(BigInt(931500000000000000)));
             });
         });
     });
