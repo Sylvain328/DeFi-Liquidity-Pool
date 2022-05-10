@@ -6,6 +6,6 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract HWT is ERC20 {
     constructor() ERC20("Hello World Token", "HWT") {
-        _mint(msg.sender, 1000000000000000000000000000);
+        _mint(msg.sender, 1000000000 * 1e18);
     }
 }

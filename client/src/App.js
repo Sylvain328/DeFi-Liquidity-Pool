@@ -3,11 +3,15 @@ import DefiProtocol from "./contracts/DeFiProtocol.json";
 import HWT from "./contracts/HWT.json";
 import getWeb3 from "./getWeb3";
 import Header from "./components/Header.js";
+import GeneralData from "./components/GeneralData.js";
+import PoolContainer from "./components/PoolContainer.js";
+import ProtocolRequester from "./web3/protocolRequester";
 
 import "./App.css";
+import TokenRequester from "./web3/tokenRequester";
 
 class App extends Component {
-  state = { storageValue: 0, web3: null, account: null, contract: null, isOwner: null };
+  state = { storageValue: 0, web3: null, account: null, instance: null, isOwner: null, contract: null, tokenContract: null };
 
   componentDidMount = async () => {
     try {
@@ -25,15 +29,30 @@ class App extends Component {
         deployedNetwork && deployedNetwork.address,
       );
       
+      // Get the HWT token instance
+      const hwtDeployedNetwork = HWT.networks[networkId];
+      const tokenInstance = new web3.eth.Contract(
+        HWT.abi,
+        hwtDeployedNetwork && hwtDeployedNetwork.address,
+      );
+
       const owner = await instance.methods.owner().call();
       const isOwner = owner == accounts[0];
+      const account = accounts[0];
+
+      const tokenContract = new TokenRequester(tokenInstance, accounts[0]);
+      debugger
+      const test = await tokenInstance.methods.balanceOf(accounts[0]).call();
+      const contract = new ProtocolRequester(instance, accounts[0]);
 
       // Set web3, accounts, and contract to the state, and then proceed with an
       // example of interacting with the contract's methods.
       this.setState({ web3, 
-        account: owner, 
+        account: account, 
         isOwner: isOwner,
-        contract: instance });
+        instance: instance,
+        contract:  contract,
+        tokenContract : tokenContract});
     } catch (error) {
       // Catch any errors for any of the above operations.
       alert(
@@ -42,18 +61,17 @@ class App extends Component {
       console.error(error);
     }
   };
-  
-  /** Get the reward Amount of the HWT Token Price */
-  getHwtTokenUsdValue = async() => {
-    return await this.state.contract.methods.hwtTokenUsdValue().call({from: this.state.account});
-  }
 
   render() {
     if (!this.state.web3) {
       return <div>Loading Web3, accounts, and contract...</div>;
     }
     return (
-      <Header account={this.state.account} isOwner={this.state.isOwner} getHwtPrice={this.getHwtTokenUsdValue} />
+      <div className="App">
+        <Header account={this.state.account} isOwner={this.state.isOwner} contract={this.state.contract} />
+        <GeneralData />
+        <PoolContainer contract={this.state.contract} tokenContract={this.state.tokenContract} />
+      </div>
     );
   }
 }

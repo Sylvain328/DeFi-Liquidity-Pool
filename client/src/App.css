@@ -1,16 +1,453 @@
+@font-face {
+  font-family: Neon;
+  src: url("./fonts/neon2.ttf");
+}
+
+h3 {
+  text-shadow: 1px 1px 2px #ff2483, 0 0 1em #ae2967, 0 0 0.2em #ff01a8
+}
+
+body {
+  background-color: #5c6269;
+  color: white;
+  background: url(./images/back2.jpg) no-repeat center center fixed; 
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+}
+
 .Header {
   display: flex;
   justify-content: space-between;
-  padding: 0 30px;
+  padding: 10px 30px;
   margin-bottom: 30px;
-  background-color: #477eff;
+  background-color: #302f32;
   color: white;
   font-weight: bold;
+}
+
+.HeaderInfo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.OwnerStatus {
+  border-radius: 10px;
+  background: white;
+  width: 40px;
+  height: 40px;
+  font-size: 13px;
+  color: #302f32;
+  font-weight: bold;
+  line-height: 37px;
+  text-align: center;
+}
+
+.GeneralDataContainer {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
   align-items: center;
 }
 
-.StatusContainer {
+.GeneralData, .LiquidityPool {
   display: flex;
-  justify-content: end;
-  gap: 5px;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 5px;
+  background-color: #3d3c3f;
+  box-shadow: 0 0 31px rgba(241, 60, 199, 0.8); 
+	-webkit-box-shadow: 0 0 31px rgba(241, 60, 199, 0.8);; 
+	-moz-box-shadow: 0 0 31px rgba(241, 60, 199, 0.8);;
+}
+
+.GeneralData {
+  width: 500px;
+  height: 250px;
+  padding: 10px;
+}
+
+.LiquidityPool {
+  width: 350px;
+  margin-bottom: 100px;
+  padding: 20px 0; 
+}
+
+.DataContainer, .PoolDataContainer {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.DataContainer {
+  width: 400px;
+}
+
+.PoolDataContainer {
+  width: 260px;
+}
+
+.Indicator {
+  color: #6f6f71;
+}
+
+.ProtocolData, .UserData {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.ProtocolData, .UserData {
+  width: 300px;
+}
+
+.HwtConversion {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border-right: 1px solid #ff2483;
+  padding-right: 20px;
+}
+
+.AccountData {
+  display: flex;
+  padding-left: 20px;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.PoolContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 50px;
+}
+
+.tabs, .RewardContent {
+  margin-top: 20px;
+  width: 300px;
+}
+
+.tab-list {
+  display: flex;
+  padding: 0;
+  border-radius: 5px 5px 0 0;
+  background-color: #302f32;
+  margin: 0;
+  height: 40px;
+}
+
+.tab-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  width: 150px;
+}
+
+.tab-list-active {
+  border-bottom: solid #ff2483;
+  color: #ff2483;
+  text-shadow: 1px 1px 2px #ff2483, 0 0 1em #ae2967, 0 0 0.2em #ff01a8;
+}
+
+.tab-content, .RewardContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #302f32;
+  border-radius: 5px;
+}
+
+.tab-content {
+  border-radius: 0 0 5px 5px;
+}
+
+.RewardContent {
+  padding: 20px 0;
+}
+
+.PoolPart {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 50px;
+}
+
+.PoolBaseInfo {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.DepositWithdraw {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  padding: 15px 0;
+}
+
+.DepositWithdrawButton, .ClaimRewardButton {
+  width: 260px;
+  height: 38px;
+  background-color: #df0e69;
+  cursor: pointer;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 15px;
+}
+
+.DepositWithdrawButton:hover, .ClaimRewardButton:hover {
+  background-color: #ed69a2;
+}
+
+.SliderSelector {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 10px 0;
+  font-size: 0.8em;
+}
+
+/*Chrome*/
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+  input[type='range'] {
+    overflow: hidden;
+    width: 230px;
+    -webkit-appearance: none;
+    background-color: #302f32;
+    color: #3d3c3f;
+  }
+  
+  input[type='range']::-webkit-slider-runnable-track {
+    height: 10px;
+    -webkit-appearance: none;
+    color: #df0e69;
+    margin-top: -1px;
+  }
+  
+  input[type='range']::-webkit-slider-thumb {
+    width: 10px;
+    -webkit-appearance: none;
+    height: 10px;
+    cursor: ew-resize;
+    background: #302f32;
+    box-shadow: -80px 0 0 80px #df0e69;
+  }
+
+}
+/** FF*/
+input[type="range"]::-moz-range-progress {
+  background-color: #df0e69; 
+}
+input[type="range"]::-moz-range-track {  
+  background-color: #302f32;
+}
+/* IE*/
+input[type="range"]::-ms-fill-lower {
+  background-color: #df0e69; 
+}
+input[type="range"]::-ms-fill-upper {  
+  background-color: #302f32;
+}
+
+.sign {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-image: radial-gradient( ellipse 50% 35% at 50% 50%, #6b1839, transparent );
+  font-family: "Neon";
+  text-transform: uppercase;
+  font-size: 1.6em;
+  color: #ffe6ff;
+  text-shadow: 0 0 0.6rem #ffe6ff, 0 0 1.5rem #ff65bd, -0.2rem 0.1rem 1rem #ff65bd, 0.2rem 0.1rem 1rem #ff65bd, 0 -0.5rem 2rem #ff2483, 0 0.5rem 3rem #ff2483;
+  animation: shine 2s forwards, flicker 3s infinite;
+}
+
+@keyframes blink {
+  0%,
+  22%,
+  36%,
+  75% {
+    color: #ffe6ff;
+    text-shadow: 0 0 0.6rem #ffe6ff, 0 0 1.5rem #ff65bd,
+      -0.2rem 0.1rem 1rem #ff65bd, 0.2rem 0.1rem 1rem #ff65bd,
+      0 -0.5rem 2rem #ff2483, 0 0.5rem 3rem #ff2483;
+  }
+  28%,
+  33% {
+    color: #ff65bd;
+    text-shadow: none;
+  }
+  82%,
+  97% {
+    color: #ff2483;
+    text-shadow: none;
+  }
+}
+
+.flicker {
+  animation: shine 2s forwards, blink 3s 2s infinite;
+}
+
+.fast-flicker {
+  animation: shine 2s forwards, blink 10s 1s infinite;
+}
+
+@keyframes shine {
+  0% {
+    color: #6b1839;
+    text-shadow: none;
+  }
+  100% {
+    color: #ffe6ff;
+    text-shadow: 0 0 0.6rem #ffe6ff, 0 0 1.5rem #ff65bd,
+      -0.2rem 0.1rem 1rem #ff65bd, 0.2rem 0.1rem 1rem #ff65bd,
+      0 -0.5rem 2rem #ff2483, 0 0.5rem 3rem #ff2483;
+  }
+}
+
+@keyframes flicker {
+  from {
+    opacity: 1;
+  }
+
+  4% {
+    opacity: 0.9;
+  }
+
+  6% {
+    opacity: 0.85;
+  }
+
+  8% {
+    opacity: 0.95;
+  }
+
+  10% {
+    opacity: 0.9;
+  }
+
+  11% {
+    opacity: 0.922;
+  }
+
+  12% {
+    opacity: 0.9;
+  }
+
+  14% {
+    opacity: 0.95;
+  }
+
+  16% {
+    opacity: 0.98;
+  }
+
+  17% {
+    opacity: 0.9;
+  }
+
+  19% {
+    opacity: 0.93;
+  }
+
+  20% {
+    opacity: 0.99;
+  }
+
+  24% {
+    opacity: 1;
+  }
+
+  26% {
+    opacity: 0.94;
+  }
+
+  28% {
+    opacity: 0.98;
+  }
+
+  37% {
+    opacity: 0.93;
+  }
+
+  38% {
+    opacity: 0.5;
+  }
+
+  39% {
+    opacity: 0.96;
+  }
+
+  42% {
+    opacity: 1;
+  }
+
+  44% {
+    opacity: 0.97;
+  }
+
+  46% {
+    opacity: 0.94;
+  }
+
+  56% {
+    opacity: 0.9;
+  }
+
+  58% {
+    opacity: 0.9;
+  }
+
+  60% {
+    opacity: 0.99;
+  }
+
+  68% {
+    opacity: 1;
+  }
+
+  70% {
+    opacity: 0.9;
+  }
+
+  72% {
+    opacity: 0.95;
+  }
+
+  93% {
+    opacity: 0.93;
+  }
+
+  95% {
+    opacity: 0.95;
+  }
+
+  97% {
+    opacity: 0.93;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.flux {
+  font-family: Neon;
+  font-size: 1.7em;
+  color: #ff6bab;
+  margin-bottom: 10px;
+  text-shadow: 1px 1px 2px #ff2483, 0 0 1em #ae2967, 0 0 0.2em #ff01a8;
 }
