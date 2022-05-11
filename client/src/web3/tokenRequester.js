@@ -15,6 +15,6 @@ export default class TokenRequester {
     /** Approve the transaction on the token constract */
     approve = async(_contractAddress, _valueToStake) => {
         console.log(process.versions)
-        return await this.token.methods.approve(_contractAddress, BigNumber(_valueToStake).multipliedBy(1e18)).send({from: this.account});
+        return await this.token.methods.approve(_contractAddress, BigNumber(_valueToStake * 1e18).toFixed()).send({from: this.account});
     }
 }

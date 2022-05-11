@@ -143,7 +143,7 @@ contract DeFiProtocol is Ownable {
         require(_amount <= stakerData.stakedAmount, "You didn't stored this amount in the pool");
 
         // Update the reward first ! Then update staked amount and timestamp
-        stakerData.reward = computeReward(stakerData);
+        //stakerData.reward = computeReward(stakerData);
 
         stakerData.stakedAmount = stakerData.stakedAmount - _amount;
         stakerData.updateTimestamp = block.timestamp;

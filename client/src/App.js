@@ -5,13 +5,13 @@ import getWeb3 from "./getWeb3";
 import Header from "./components/Header.js";
 import GeneralData from "./components/GeneralData.js";
 import PoolContainer from "./components/PoolContainer.js";
-import ProtocolRequester from "./web3/protocolRequester";
+import RequestManager from "./manager/requestManager.js";
 
 import "./App.css";
-import TokenRequester from "./web3/tokenRequester";
+
 
 class App extends Component {
-  state = { storageValue: 0, web3: null, account: null, instance: null, isOwner: null, contract: null, tokenContract: null };
+  state = { storageValue: 0, web3: null, account: null, instance: null, isOwner: null, requestManager: null };
 
   componentDidMount = async () => {
     try {
@@ -37,13 +37,10 @@ class App extends Component {
       );
 
       const owner = await instance.methods.owner().call();
-      const isOwner = owner == accounts[0];
       const account = accounts[0];
+      const isOwner = owner == account;
 
-      const tokenContract = new TokenRequester(tokenInstance, accounts[0]);
-      debugger
-      const test = await tokenInstance.methods.balanceOf(accounts[0]).call();
-      const contract = new ProtocolRequester(instance, accounts[0]);
+      const requestManager = new RequestManager(instance, tokenInstance, account);
 
       // Set web3, accounts, and contract to the state, and then proceed with an
       // example of interacting with the contract's methods.
@@ -51,8 +48,7 @@ class App extends Component {
         account: account, 
         isOwner: isOwner,
         instance: instance,
-        contract:  contract,
-        tokenContract : tokenContract});
+        requestManager: requestManager});
     } catch (error) {
       // Catch any errors for any of the above operations.
       alert(
@@ -68,9 +64,9 @@ class App extends Component {
     }
     return (
       <div className="App">
-        <Header account={this.state.account} isOwner={this.state.isOwner} contract={this.state.contract} />
-        <GeneralData />
-        <PoolContainer contract={this.state.contract} tokenContract={this.state.tokenContract} />
+        <Header account={this.state.account} isOwner={this.state.isOwner} requestManager={this.state.requestManager} />
+        <GeneralData requestManager={this.state.requestManager}/>
+        <PoolContainer requestManager={this.state.requestManager} />
       </div>
     );
   }

@@ -4,7 +4,7 @@ import DataContainer from "./DataContainer.js";
 
 export default class DepositWithdraw extends React.Component {
 
-    state = {balance: 0, value: 50, depositAmount: 0};
+    state = {balance: 0, value: 50, depositAmount: 0, isButtonLocked: false};
 
 
     constructor(props) {
@@ -12,20 +12,39 @@ export default class DepositWithdraw extends React.Component {
     }
 
     componentDidMount = async () => {
-        let accountBalance = await this.props.tokenContract.getBalance();
+
+        let requestManager = this.props.requestManager;
+
+        let accountBalance = await this.props.requestManager.getTokenBalance();
         let amount = accountBalance * (this.state.value / 100);
+        let isButtonLocked = this.state.value == 0;
+
+        let instance = requestManager.getProtocolEvents();
+        let eventOptions = requestManager.getBaseEventOptions();
+
+        // // On the event, refresh the amounts
+        await instance.events
+        .AmountStaked(eventOptions)
+        .on('data', event => {
+            this.setState({balance: event.returnValues[0] / 1e18});
+            //this.recomputeTokenToDeposit(this.state.value);
+        });
+
         this.setState({balance: accountBalance, depositAmount: amount});
     }
 
     computeTokenAmount = (event) => {
-        let computeAmount = Number.parseFloat(this.state.balance * (event.target.value / 100)).toFixed(4);
-        this.state.value = event.target.value;
-        this.setState({depositAmount: computeAmount, value: event.target.value});
+        this.recomputeTokenToDeposit(event.target.value);
+    }
+
+    recomputeTokenToDeposit= (_sliderValue) => {
+        let computeAmount = Number.parseFloat(this.state.balance * (_sliderValue / 100)).toFixed(4);
+        this.state.value = _sliderValue;
+        this.setState({depositAmount: computeAmount, value: _sliderValue});
     }
 
     depositAmount = async () => {
-        await this.props.tokenContract.approve(this.props.contract.contract._address, this.state.depositAmount);
-        await this.props.contract.stake(this.state.value);
+        await this.props.requestManager.deposit(this.state.depositAmount);
     }
 
     render(){

@@ -16,7 +16,7 @@ export default class PoolContainer extends React.Component {
             <div className='PoolPart'>
                 <div className="flux">Liquidity pools</div>
                 <div className='PoolContainer'>
-                    <LiquidityPool contract={this.props.contract} tokenContract={this.props.tokenContract} />
+                    <LiquidityPool requestManager={this.props.requestManager} />
                 </div>
             </div>
 

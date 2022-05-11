@@ -10,8 +10,8 @@ export default class Header extends React.Component {
     }
     
     componentDidMount = async () => {
-        const price = await this.props.contract.getHwtTokenUsdValue();
-        this.setState({price: RateConverter.convert(price)});
+        const price = await this.props.requestManager.getHwtTokenUsdValue();
+        this.setState({price: price});
     }
 
     render(){
