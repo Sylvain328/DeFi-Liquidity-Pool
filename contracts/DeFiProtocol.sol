@@ -25,31 +25,24 @@ contract DeFiProtocol is Ownable {
         uint256 reward;
     }
 
+    /**
+     * @notice Contain liquidity pool data
+     * @dev aggregator is used to get price over the Chainlink Oracle
+     */
+    struct LiquidityPoolData {
+        bool isAuthorized;
+        uint rewardPerSecond;
+        AggregatorV3Interface aggregator;
+        uint totalValueLocked;
+        mapping(address => StakerData) stakerData;
+    }
 
     // ::::::::::::: Properties ::::::::::::: //
 
     /**
-     * @notice This mapping store the amount of liquidity and reward by address
+     * @notice This mapping store liquidity pool data per token address
      */
-    mapping(address => StakerData) stakerDataPerAddress;
-
-    /**
-     * @notice The Total Value Locked(TVL) of the liquidity pool
-     * @dev The TVL is public because front may want to display it
-     */
-    uint256 public totalValueLocked;
-    
-    /**
-     * @notice The Token to store in the liquidity pool
-     * @dev Initialized on the constructor
-     */
-    IERC20 token;
-
-    /**
-     * @notice Retrieve the token price
-     * @dev Use Chainlink to retrieve the USD price of the token
-     */
-    AggregatorV3Interface internal priceFeed;
+    mapping(address => LiquidityPoolData) liquidityPoolData;
 
     /**
      * @notice Token multiplier to give a price on the Hwt token
@@ -60,9 +53,17 @@ contract DeFiProtocol is Ownable {
     /**
      * @notice reward per second for the liquidity pool
      */
-    uint rewardPerSecond = 925925925925;
+    //uint rewardPerSecond = 925925925925;
 
     // ::::::::::::: Modifiers ::::::::::::: //
+
+    /**
+     * @notice Modifier that allow only authorizedToken for liquidity pool
+     */
+    modifier onlyAuthorizedToken(address _tokenAddress) {
+        require(liquidityPoolData[_tokenAddress].isAuthorized, "Only Authorized token can do this action");
+        _;
+    }
 
     /**
      * @notice Modifier that allow only amount greater than zero to be staked or unstaked
@@ -77,108 +78,131 @@ contract DeFiProtocol is Ownable {
     /**
      * @notice Event informing total amount staked in the Liquidity Pool
      * @param sender The address that staked in the pool
+     * @param tokenAddress The liquidity pool token
      * @param stakedAmount The amount that has been staked
      */
-    event AmountStaked (address sender, uint stakedAmount);
+    event AmountStaked (address sender, address tokenAddress, uint stakedAmount);
 
     /**
      * @notice Event informing an amount was unstaked in the Liquidity Pool
      * @param sender The address that unstaked in the pool
+     * @param tokenAddress The liquidity pool token
      * @param unstakedAmount The amount that has been unstaked
      */
-    event AmountUnstaked (address sender, uint unstakedAmount);
+    event AmountUnstaked (address sender, address tokenAddress, uint unstakedAmount);
 
     /** 
      * @notice Event informing a reward was send
      * @param sender The address that claim the reward
+     * @param tokenAddress The liquidity pool token
      * @param rewardClaimedAmount The amount that has been offered
      */
-    event RewardOffered (address sender, uint rewardClaimedAmount);
+    event RewardOffered (address sender, address tokenAddress, uint rewardClaimedAmount);
+
+    /**
+     * @notice Event informing a new token is authorized for liquidity pools
+     * @param tokenAddress The address of the new authorized token
+     * @param rewardPerSecond The reward rate per second
+     */
+    event TokenAuthorized (address tokenAddress, uint rewardPerSecond);
 
     // ::::::::::::: Methods ::::::::::::: //
 
     /**
-     * @notice Create erc20 instance that will be used for the liquidity pool
-     * @param _tokenAddress the smart contract address of the erc20 token
+     * @notice This function allow owner to add new Authorized token for liquidity pools
+     * @param _tokenAddress the erc20 token address
+     * @param _oracleAggregatorAddress The oracle aggregator address that will permit to get the token price in USD
+     * @param _rewardPerSecond The win rate of the liquidity pool
      */
-    constructor(address _tokenAddress) {
-        token = IERC20(_tokenAddress);
-        // Link/USD price feed
-        priceFeed = AggregatorV3Interface(0x2c1d072e956AFFC0D435Cb7AC38EF18d24d9127c);
+    function autorizeToken(address _tokenAddress, address _oracleAggregatorAddress, uint _rewardPerSecond) external onlyOwner {
+        require(!liquidityPoolData[_tokenAddress].isAuthorized, "This token is already authorized");
+
+        liquidityPoolData[_tokenAddress].rewardPerSecond = _rewardPerSecond;
+        liquidityPoolData[_tokenAddress].aggregator = AggregatorV3Interface(_oracleAggregatorAddress);
+        liquidityPoolData[_tokenAddress].isAuthorized = true;
+
+        emit TokenAuthorized(_tokenAddress, _rewardPerSecond);
     }
 
     /**
      * @notice Stake token in the Liquidity pool
      * @dev Refresh the stored amount in the address mapping storedValuePerAddress and refresh the TVL
+     * @param _tokenAddress The token address to stake in liquidity pool
      * @param _amount Total amount to store in the liquidity pool
      */
-    function stake(uint _amount) payable external onlyAmountGreaterThanZero(_amount) {
+    function stake(address _tokenAddress, uint _amount) payable external onlyAuthorizedToken(_tokenAddress) onlyAmountGreaterThanZero(_amount) {
         
-        token.transferFrom(msg.sender, address(this), _amount);
+        IERC20(_tokenAddress).transferFrom(msg.sender, address(this), _amount);
 
-        // Update the locked amount of the sender
-        StakerData storage stakerData = stakerDataPerAddress[msg.sender];
+        // Get the liquidity pool data
+        LiquidityPoolData storage poolData = liquidityPoolData[_tokenAddress];
+        // Get the staker data
+        StakerData storage stakerData = poolData.stakerData[msg.sender];
 
         // if tokens are already stored, update reward before the new stake
         if(stakerData.stakedAmount > 0) {
-            stakerData.reward = computeReward(stakerData);
+            stakerData.reward = computeReward(stakerData, poolData.rewardPerSecond);
         }
 
+        // Update the staked amount and the timestamp to compute new amount reward at this specific time
         stakerData.stakedAmount = stakerData.stakedAmount + _amount;
         stakerData.updateTimestamp = block.timestamp; 
 
         // Update the tvl of the liquidity pool
-        totalValueLocked = totalValueLocked  + _amount;
+        poolData.totalValueLocked = poolData.totalValueLocked  + _amount;
 
-        emit AmountStaked(msg.sender, stakerData.stakedAmount);
+        emit AmountStaked(msg.sender, _tokenAddress, stakerData.stakedAmount);
     }
 
     /**
      * @notice Unstake the tokens in the Liquidity pool, user can retrieve their tokens
      * @dev Refresh the stored amount in the address mapping stakerDataPerAddress and refresh the TVL
+     * @param _tokenAddress The token address to unstake from liquidity pool
      * @param _amount Total amount to unstake from the liquidity pool
      */
-    function unstake(uint256 _amount) payable external onlyAmountGreaterThanZero(_amount) {
+    function unstake(address _tokenAddress, uint256 _amount) payable external onlyAuthorizedToken(_tokenAddress) onlyAmountGreaterThanZero(_amount) {
         
-        StakerData storage stakerData = stakerDataPerAddress[msg.sender];
+        // Get the liquidity pool data
+        LiquidityPoolData storage poolData = liquidityPoolData[_tokenAddress];
+
+        // Get the staker data
+        StakerData storage stakerData = poolData.stakerData[msg.sender];
         
         // Check if the sender have this amount in pool
         require(_amount <= stakerData.stakedAmount, "You didn't stored this amount in the pool");
 
         // Update the reward first ! Then update staked amount and timestamp
-        //stakerData.reward = computeReward(stakerData);
+        stakerData.reward = computeReward(stakerData, poolData.rewardPerSecond);
 
+        // Update the staked amount and the timestamp to compute new amount reward at this specific time
         stakerData.stakedAmount = stakerData.stakedAmount - _amount;
         stakerData.updateTimestamp = block.timestamp;
 
         // Update the tvl of the liquidity pool
-        totalValueLocked = totalValueLocked  - _amount;
+        poolData.totalValueLocked = poolData.totalValueLocked  - _amount;
 
         // Send the token back to the sender
-        token.transfer(msg.sender, _amount);
+        IERC20(_tokenAddress).transfer(msg.sender, _amount);
         
-        emit AmountUnstaked(msg.sender, stakerData.stakedAmount);
+        emit AmountUnstaked(msg.sender, _tokenAddress, stakerData.stakedAmount);
     }
 
     /**
      * @notice Get the msg.sender token staked amount
+     * @param _tokenAddress The address of the token to check for staked amount
      * @return stakedAmount token staked by msg.sender
      */
-    function getStakedAmount() external view returns (uint stakedAmount) {
-        return(stakerDataPerAddress[msg.sender].stakedAmount);
-    }
-
-    function getTimeStamp() external view returns (uint actualStamp, uint userStamp) {
-        return(block.timestamp, stakerDataPerAddress[msg.sender].updateTimestamp);
+    function getStakedAmount(address _tokenAddress) external view onlyAuthorizedToken(_tokenAddress) returns (uint stakedAmount) {
+        return(liquidityPoolData[_tokenAddress].stakerData[msg.sender].stakedAmount);
     }
 
     /**
      * @notice Get the token price in USD
      * @dev USD Price is retrieved thanks to Chainlink
-     * @dev Can't be unit tested because of Ganache
+     * @param _tokenAddress The authorized token address to get price
      * @return tokenPrice price of the token
      */
-    function getTokenPrice() external view returns (int tokenPrice) {
+    function getTokenPrice(address _tokenAddress) external view onlyAuthorizedToken(_tokenAddress) returns (int tokenPrice) {
 
         (
             /* uint80 roundID */,
@@ -186,17 +210,18 @@ contract DeFiProtocol is Ownable {
             /* uint256 startedAt, */,
             /* uint256 timeStamp, */,
             /* uint80 answeredInRound */
-        ) = priceFeed.latestRoundData();
+        ) = liquidityPoolData[_tokenAddress].aggregator.latestRoundData();
 
         return(price);
     }
 
     /**
      * @notice Get the reward for msg.sender
+     * @param _tokenAddress The token address to get liquidity pool reward of this token
      * @return reward The reward computed by the contract
      */
-    function getRewardAmount() external view returns (uint reward) {
-        return(computeReward(stakerDataPerAddress[msg.sender]));
+    function getRewardAmount(address _tokenAddress) external view onlyAuthorizedToken(_tokenAddress) returns (uint reward) {
+        return(computeReward(liquidityPoolData[_tokenAddress].stakerData[msg.sender], liquidityPoolData[_tokenAddress].rewardPerSecond));
     }
 
     /**
@@ -205,9 +230,9 @@ contract DeFiProtocol is Ownable {
      * @param _stakerData Data of the staker
      * @return rewardAmount The computed reward amount
      */
-    function computeReward(StakerData memory _stakerData) private view returns(uint rewardAmount) {
+    function computeReward(StakerData memory _stakerData, uint _rewardPerSecond) private view returns(uint rewardAmount) {
         
-        uint reward = ((block.timestamp - _stakerData.updateTimestamp) * rewardPerSecond * _stakerData.stakedAmount);
+        uint reward = ((block.timestamp - _stakerData.updateTimestamp) * _rewardPerSecond * _stakerData.stakedAmount);
 
         if(reward > 0) {
             return _stakerData.reward + (reward / 1e18);
@@ -219,13 +244,15 @@ contract DeFiProtocol is Ownable {
 
     /**
      * @notice Send then reward to the msg.sender
+     * @param _tokenAddress The token address to claim reward from the pool
      */
-    function claimReward() external {
+    function claimReward(address _tokenAddress) external onlyAuthorizedToken(_tokenAddress) {
 
-        StakerData storage stakerData = stakerDataPerAddress[msg.sender];
+        // Get the staker data
+        StakerData storage stakerData = liquidityPoolData[_tokenAddress].stakerData[msg.sender];
 
         // Compute the reward
-        uint reward = computeReward(stakerData);
+        uint reward = computeReward(stakerData, liquidityPoolData[_tokenAddress].rewardPerSecond);
 
         require(reward > 0, "No reward to claim");
         
@@ -234,8 +261,17 @@ contract DeFiProtocol is Ownable {
         stakerData.reward = 0;
 
         // Send reward tokens to the msg.sender
-        token.transfer(msg.sender, reward);
+        IERC20(_tokenAddress).transfer(msg.sender, reward);
 
-        emit RewardOffered(msg.sender, reward);
+        emit RewardOffered(msg.sender, _tokenAddress, reward);
+    }
+
+    /**
+     * @notice Get the total value Locked of a liquidity pool
+     * @param _tokenAddress The token address for the liquidity pool
+     */
+    function getTotalValueLocked(address _tokenAddress) external view onlyAuthorizedToken(_tokenAddress) returns (uint) {
+
+        return liquidityPoolData[_tokenAddress].totalValueLocked;
     }
 }
