@@ -269,9 +269,20 @@ contract DeFiProtocol is Ownable {
     /**
      * @notice Get the total value Locked of a liquidity pool
      * @param _tokenAddress The token address for the liquidity pool
+     * @return uint The TVL of the pool
      */
     function getTotalValueLocked(address _tokenAddress) external view onlyAuthorizedToken(_tokenAddress) returns (uint) {
 
         return liquidityPoolData[_tokenAddress].totalValueLocked;
+    }
+
+    /**
+     * @notice Get the reward rate per second
+     * @param _tokenAddress The token address for the liquidity pool
+     * @return uint The Reward per second for the pool
+     */
+    function getRewardPerSecond(address _tokenAddress) external view onlyAuthorizedToken(_tokenAddress) returns (uint) {
+
+        return liquidityPoolData[_tokenAddress].rewardPerSecond;
     }
 }
