@@ -1,54 +1,53 @@
 
 import ProtocolRequester from "../web3/protocolRequester.js";
-import TokenRequester from "../web3/tokenRequester.js";
 
 export default class RequestManager {
     
-    constructor(_protocolInstance, _tokenInstance, _account, _getBlockNumber) {
+    constructor(_protocolInstance, _poolManagers, _account, _getBlockNumber) {
         
         this.protocolInstance = _protocolInstance;
         this.protocolRequester = new ProtocolRequester(_protocolInstance, _account);
-        this.tokenRequester = new TokenRequester(_tokenInstance, _account);
+        this.poolManagers = _poolManagers;
         this.account = _account;
         this.getBlockNumber = _getBlockNumber;
     }
 
-    getHwtTokenUsdValue = async() => {
-        return await this.protocolRequester.getHwtTokenUsdValue();
+    getHwtTokenUsdValue = async(_address) => {
+        return await this.protocolRequester.getHwtTokenUsdValue(_address);
     }
 
-    getAllPoolsTvl = async() => {
-        return await this.protocolRequester.totalValueLocked()
+    // getAllPoolsTvl = async(_address) => {
+    //     return await this.protocolRequester.getTotalValueLocked()
+    // }
+
+    getSinglePoolTvl = async(_address) => {
+        return await this.protocolRequester.getTotalValueLocked(_address);
     }
 
-    getSinglePoolTvl = async() => {
-        return await this.protocolRequester.totalValueLocked()
+    deposit = async(_tokenId, _address, _depositAmount) => {
+
+        await this.poolManagers[_tokenId].tokenRequester.approve(this.protocolRequester.contract._address, _depositAmount); 
+        await this.protocolRequester.stake(_address, _depositAmount);
     }
 
-    deposit = async(_depositAmount) => {
-
-        await this.tokenRequester.approve(this.protocolRequester.contract._address, _depositAmount); 
-        await this.protocolRequester.stake(_depositAmount);
+    withdraw = async(_address, _withdrawAmount) => {
+        await this.protocolRequester.unstake(_address, _withdrawAmount);
     }
 
-    withdraw = async(_withdrawAmount) => {
-        await this.protocolRequester.unstake(_withdrawAmount);
+    getPoolStakedAmount = async(_address) => {
+        return await this.protocolRequester.getPoolStakedAmount(_address);
     }
 
-    getPoolStakedAmount = async() => {
-        return await this.protocolRequester.getPoolStakedAmount();
+    getTokenBalance = async(_tokenId) => {
+        return await this.poolManagers[_tokenId].tokenRequester.getBalance();
     }
 
-    getTokenBalance = async() => {
-        return await this.tokenRequester.getBalance();
+    getPoolRewardAmount = async(_address) => {
+        return await this.protocolRequester.getRewardAmount(_address);
     }
 
-    getPoolRewardAmount = async() => {
-        return await this.protocolRequester.getRewardAmount();
-    }
-
-    claimPoolReward = async() => {
-        await this.protocolRequester.claimPoolReward();
+    claimPoolReward = async(_address) => {
+        await this.protocolRequester.claimPoolReward(_address);
     }
 
     getProtocolEvents = () => {

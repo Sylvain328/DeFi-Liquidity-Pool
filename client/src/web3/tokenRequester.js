@@ -7,7 +7,7 @@ export default class TokenRequester {
         this.account = _account;
     }
 
-    /** Get the hwt balance for the connected account */
+    /** Get the token balance for the connected account */
     getBalance = async() => {
         return RateConverter.convertToEth(await this.token.methods.balanceOf(this.account).call());
     }

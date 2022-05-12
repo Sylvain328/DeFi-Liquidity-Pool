@@ -50,11 +50,6 @@ contract DeFiProtocol is Ownable {
      */
     uint public hwtTokenUsdValue = 931500000000000000;
 
-    /**
-     * @notice reward per second for the liquidity pool
-     */
-    //uint rewardPerSecond = 925925925925;
-
     // ::::::::::::: Modifiers ::::::::::::: //
 
     /**
@@ -109,12 +104,12 @@ contract DeFiProtocol is Ownable {
     // ::::::::::::: Methods ::::::::::::: //
 
     /**
-     * @notice This function allow owner to add new Authorized token for liquidity pools
+     * @notice Create a new pool with an erc20 token
      * @param _tokenAddress the erc20 token address
      * @param _oracleAggregatorAddress The oracle aggregator address that will permit to get the token price in USD
      * @param _rewardPerSecond The win rate of the liquidity pool
      */
-    function autorizeToken(address _tokenAddress, address _oracleAggregatorAddress, uint _rewardPerSecond) external onlyOwner {
+    function createLiquidityPool(address _tokenAddress, address _oracleAggregatorAddress, uint _rewardPerSecond) external onlyOwner {
         require(!liquidityPoolData[_tokenAddress].isAuthorized, "This token is already authorized");
 
         liquidityPoolData[_tokenAddress].rewardPerSecond = _rewardPerSecond;

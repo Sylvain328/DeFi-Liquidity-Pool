@@ -8,7 +8,7 @@ export default class ProtocolData extends React.Component {
     componentDidMount = async () => {
 
         // Get general TVL from all pools
-        let allPoolTvl = await this.props.requestManager.getAllPoolsTvl();
+        let allPoolTvl = 0;//await this.props.requestManager.getAllPoolsTvl();
         let tokenPrice = await this.props.requestManager.getHwtTokenUsdValue();
         
         this.setState({allPoolTvl: allPoolTvl * tokenPrice});

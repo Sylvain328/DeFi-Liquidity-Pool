@@ -5,13 +5,14 @@ import getWeb3 from "./getWeb3";
 import Header from "./components/Header.js";
 import GeneralData from "./components/GeneralData.js";
 import PoolContainer from "./components/PoolContainer.js";
+import PoolManager from "./manager/poolManager.js";
 import RequestManager from "./manager/requestManager.js";
 
 import "./App.css";
 
 
 class App extends Component {
-  state = { storageValue: 0, web3: null, account: null, instance: null, isOwner: null, requestManager: null };
+  state = { storageValue: 0, web3: null, account: null, protocolInstance: null, isOwner: null, requestManager: null, poolManagers: null };
 
   componentDidMount = async () => {
     try {
@@ -24,7 +25,7 @@ class App extends Component {
       // Get the contract instance.
       const networkId = await web3.eth.net.getId();
       const deployedNetwork = DefiProtocol.networks[networkId];
-      const instance = new web3.eth.Contract(
+      const protocolInstance = new web3.eth.Contract(
         DefiProtocol.abi,
         deployedNetwork && deployedNetwork.address,
       );
@@ -36,13 +37,20 @@ class App extends Component {
         hwtDeployedNetwork && hwtDeployedNetwork.address,
       );
 
-      const owner = await instance.methods.owner().call();
+      const owner = await protocolInstance.methods.owner().call();
       const account = accounts[0];
       const isOwner = owner === account;
 
+      const hwtAddress = tokenInstance._address;
+      const hwtPoolManager = await this.buildPoolManager(tokenInstance, protocolInstance, account,'HWT');
+      // const linkToken = this.buildPoolManager(protocolInstance, hwtlinkTokenToken.address, 'HWT');
+      // const flpToken = this.buildPoolManager(protocolInstance, flpToken.address, 'HWT');
+
+      const poolManagers = {1: hwtPoolManager};
+
       // Create the manager that will request the different contract requester and return data
       // For the events, we don't want to get the past events, only actual
-      const requestManager = new RequestManager(instance, tokenInstance, account, async() => {
+      const requestManager = new RequestManager(protocolInstance, poolManagers, account, async() => {
         web3.eth.getBlockNumber();
       });
 
@@ -51,8 +59,9 @@ class App extends Component {
       this.setState({ web3, 
         account: account, 
         isOwner: isOwner,
-        instance: instance,
-        requestManager: requestManager});
+        protocolInstance: protocolInstance,
+        requestManager: requestManager,
+        poolManagers: poolManagers});
     } catch (error) {
       // Catch any errors for any of the above operations.
       alert(
@@ -62,6 +71,13 @@ class App extends Component {
     }
   };
 
+  buildPoolManager = async(tokenInstance, protocolInstance, account, symbol) => {
+    return new PoolManager(tokenInstance, 
+      symbol, 
+      await protocolInstance.methods.getRewardPerSecond(tokenInstance._address).call({from: account}),
+      account);
+  }
+
   render() {
     if (!this.state.web3) {
       return <div>Loading Web3, accounts, and contract...</div>;
@@ -70,7 +86,7 @@ class App extends Component {
       <div className="App">
         <Header account={this.state.account} isOwner={this.state.isOwner} requestManager={this.state.requestManager} />
         <GeneralData requestManager={this.state.requestManager}/>
-        <PoolContainer requestManager={this.state.requestManager} />
+        <PoolContainer requestManager={this.state.requestManager} poolManagers={this.state.poolManagers} />
       </div>
     );
   }

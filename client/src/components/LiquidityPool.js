@@ -41,7 +41,7 @@ export default class LiquidityPool extends React.Component {
      */
     computePoolTvl = async() => {
 
-        let poolTvl = await this.props.requestManager.getSinglePoolTvl();
+        let poolTvl = await this.props.requestManager.getSinglePoolTvl(this.props.tokenAddress);
         let poolTvlUsd = poolTvl * this.state.tokenPrice;
         this.setState({poolTvl: poolTvl.toFixed(4), poolTvlUsd: poolTvlUsd.toFixed(4)}); 
     } 
@@ -51,7 +51,7 @@ export default class LiquidityPool extends React.Component {
      */
     computeUserStaked = async() => {
         
-        let userStaked = await this.props.requestManager.getPoolStakedAmount();
+        let userStaked = await this.props.requestManager.getPoolStakedAmount(this.props.tokenAddress);
         let userStakedUsd = userStaked * this.state.tokenPrice;
         this.setState({ userStaked: userStaked.toFixed(4), userStakedUsd: userStakedUsd.toFixed(4) }); 
     }
@@ -61,7 +61,7 @@ export default class LiquidityPool extends React.Component {
      */
     computeUserReward = async() => {
 
-        let userReward = await this.props.requestManager.getPoolRewardAmount();
+        let userReward = await this.props.requestManager.getPoolRewardAmount(this.props.tokenAddress);
         let userRewardUsd = userReward * this.state.tokenPrice;
         this.setState({ userReward: userReward.toFixed(4), userRewardUsd: userRewardUsd.toFixed(4) }); 
     }
@@ -71,7 +71,7 @@ export default class LiquidityPool extends React.Component {
      */
      updateUserWalletBalance = async() => {
 
-        let walletBalance = await this.props.requestManager.getTokenBalance();
+        let walletBalance = await this.props.requestManager.getTokenBalance(this.props.tokenId, this.props.tokenAddress);
         this.setState({ walletBalance: walletBalance.toFixed(4) }); 
     }
 
@@ -92,10 +92,12 @@ export default class LiquidityPool extends React.Component {
             await this.computePoolTvl();
 
             // Refresh the user pool data only if the event is triggered by the user
-            if(event.returnValues[0] === this.props.requestManager.account) {
+            // and for this specific pool
+            if(event.returnValues[0] === this.props.requestManager.account &&
+               event.returnValues[1] === this.props.tokenAddress) {
                 
                 // Refresh staked amount and staked amount price in US
-                let userStaked = RateConverter.convertToEth(event.returnValues[1]);
+                let userStaked = RateConverter.convertToEth(event.returnValues[2]);
                 let userStakedUsd = userStaked * this.state.tokenPrice;
                 this.setState({userStaked: userStaked, userStakedUsd: userStakedUsd});
                 // Update the user wallet balance
@@ -120,7 +122,9 @@ export default class LiquidityPool extends React.Component {
             await this.computePoolTvl();
 
             // Run the refresh only if the event comes from the connected account
-            if(event.returnValues[0] === this.props.requestManager.account) {
+            // and for this specific pool
+            if(event.returnValues[0] === this.props.requestManager.account && 
+               event.returnValues[1] === this.props.tokenAddress) {
                 await this.updateUserWalletBalance();
                 await this.computeUserStaked(); 
             }
@@ -131,21 +135,21 @@ export default class LiquidityPool extends React.Component {
      * Deposit the amount selected by the user - Triggered when user click on the deposit button
      */
     depositTokens = async (_amount) => {
-        await this.props.requestManager.deposit(_amount);
+        await this.props.requestManager.deposit(this.props.tokenId, this.props.tokenAddress, _amount);
     }
 
     /**
      * Withdraw the amount selected by the user - Triggered when user click on the withdraw button
      */
     withdrawTokens = async (_amount) => {
-        await this.props.requestManager.withdraw(_amount);
+        await this.props.requestManager.withdraw(this.props.tokenAddress, _amount);
     }
 
     /**
      * Claim the user reward on the pool - Triggered when the user click on the "claim reward" button
      */
     claimReward = async() => {
-        await this.props.requestManager.claimPoolReward();
+        await this.props.requestManager.claimPoolReward(this.props.tokenAddress);
     }
 
     render(){

@@ -13,32 +13,32 @@ export default class ProtocolRequester {
     }
 
     /** Get the TVL on the contract */
-    totalValueLocked = async() => {
-        return RateConverter.convertToEth(await this.contract.methods.totalValueLocked().call());
+    getTotalValueLocked = async(_address) => {
+        return RateConverter.convertToEth(await this.contract.methods.getTotalValueLocked(_address).call());
     }
 
     /** Stake token in account */
-    stake = async(_amount) => {
-        return await this.contract.methods.stake(RateConverter.convertToWei(_amount)).send({from: this.account});
+    stake = async(_address, _amount) => {
+        return await this.contract.methods.stake(_address, RateConverter.convertToWei(_amount)).send({from: this.account});
     }
 
     /** Unstake token in account */
-    unstake = async(_amount) => {
-        await this.contract.methods.unstake(RateConverter.convertToWei(_amount)).send({from: this.account});
+    unstake = async(_address, _amount) => {
+        await this.contract.methods.unstake(_address, RateConverter.convertToWei(_amount)).send({from: this.account});
     }
 
     /** Get staked amount in the pool */
-    getPoolStakedAmount = async() => {
-        return RateConverter.convertToEth(await this.contract.methods.getStakedAmount().call({from: this.account}));
+    getPoolStakedAmount = async(_address) => {
+        return RateConverter.convertToEth(await this.contract.methods.getStakedAmount(_address).call({from: this.account}));
     }
 
     /** Get the reward amount */
-    getRewardAmount = async() => {
-        return RateConverter.convertToEth(await this.contract.methods.getRewardAmount().call({from: this.account}));
+    getRewardAmount = async(_address) => {
+        return RateConverter.convertToEth(await this.contract.methods.getRewardAmount(_address).call({from: this.account}));
     }
 
     /** Claim the reward from the pool */
-    claimPoolReward = async() => {
-        await this.contract.methods.claimReward().send({from: this.account});
+    claimPoolReward = async(_address) => {
+        await this.contract.methods.claimReward(_address).send({from: this.account});
     }
 }

@@ -6,7 +6,7 @@ export default class Header extends React.Component {
 
     componentDidMount = async () => {
         // Get the price of 1 HWT token
-        const price = await this.props.requestManager.getHwtTokenUsdValue();
+        const price = await this.props.requestManager.getHwtTokenUsdValue(this.props.hwtTokenAddress);
         this.setState({price: price});
     }
 

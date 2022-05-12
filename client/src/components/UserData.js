@@ -31,7 +31,7 @@ export default class GeneralData extends React.Component {
      */
      computeUserStaked = async() => {
         
-        let userStaked = await this.props.requestManager.getPoolStakedAmount();
+        let userStaked = 0//await this.props.requestManager.getPoolStakedAmount();
         let userStakedUsd = userStaked * this.state.tokenPrice;
         this.setState({ userStakedUsd: userStakedUsd.toFixed(4) }); 
     }
@@ -41,7 +41,7 @@ export default class GeneralData extends React.Component {
      */
     computeUserReward = async() => {
 
-        let userReward = await this.props.requestManager.getPoolRewardAmount();
+        let userReward =0// await this.props.requestManager.getPoolRewardAmount();
         let userRewardUsd = userReward * this.state.tokenPrice;
         this.setState({ userReward: userReward.toFixed(4), userRewardUsd: userRewardUsd.toFixed(4) }); 
     }

@@ -20,7 +20,7 @@ contract('DeFiProtocol', accounts => {
             beforeEach(async () => {
                 HwTokenInstance = await HwToken.new({from:owner});
                 DeFiProtocolInstance = await DeFiProtocol.new(HwTokenInstance.address, {from:owner});
-                await DeFiProtocolInstance.autorizeToken(HwTokenInstance.address, HwTokenInstance.address, new BN(925925925925), {from: owner});
+                await DeFiProtocolInstance.createLiquidityPool(HwTokenInstance.address, HwTokenInstance.address, new BN(925925925925), {from: owner});
             });    
 
             it("should stake 5 token in the liquidity pool", async () => {
@@ -74,7 +74,7 @@ contract('DeFiProtocol', accounts => {
             beforeEach(async () => {
                 HwTokenInstance = await HwToken.new({from:owner});
                 DeFiProtocolInstance = await DeFiProtocol.new(HwTokenInstance.address, {from:owner});
-                await DeFiProtocolInstance.autorizeToken(HwTokenInstance.address, HwTokenInstance.address, new BN(925925925925), {from: owner});
+                await DeFiProtocolInstance.createLiquidityPool(HwTokenInstance.address, HwTokenInstance.address, new BN(925925925925), {from: owner});
                 await HwTokenInstance.transfer(DeFiProtocolInstance.address, convertEthToWei(20), {from: owner});
                 const stakedValue = convertEthToWei(5);
                 await HwTokenInstance.approve(DeFiProtocolInstance.address, stakedValue, {from: owner});
@@ -119,7 +119,7 @@ contract('DeFiProtocol', accounts => {
             beforeEach(async () => {
                 HwTokenInstance = await HwToken.new({from:owner});
                 DeFiProtocolInstance = await DeFiProtocol.new(HwTokenInstance.address, {from:owner});
-                await DeFiProtocolInstance.autorizeToken(HwTokenInstance.address, HwTokenInstance.address, new BN(925925925925), {from: owner});
+                await DeFiProtocolInstance.createLiquidityPool(HwTokenInstance.address, HwTokenInstance.address, new BN(925925925925), {from: owner});
                 await HwTokenInstance.transfer(DeFiProtocolInstance.address, convertEthToWei(20), {from: owner});
                 const stakedValue = convertEthToWei(5);
                 await HwTokenInstance.approve(DeFiProtocolInstance.address, stakedValue, {from: owner});
@@ -161,7 +161,7 @@ contract('DeFiProtocol', accounts => {
             beforeEach(async () => {
                 HwTokenInstance = await HwToken.new({from:owner});
                 DeFiProtocolInstance = await DeFiProtocol.new(HwTokenInstance.address, {from:owner});
-                await DeFiProtocolInstance.autorizeToken(HwTokenInstance.address, HwTokenInstance.address, new BN(925925925925), {from: owner});
+                await DeFiProtocolInstance.createLiquidityPool(HwTokenInstance.address, HwTokenInstance.address, new BN(925925925925), {from: owner});
                 await HwTokenInstance.transfer(DeFiProtocolInstance.address, convertEthToWei(20), {from: owner});
                 const stakedValue = BigInt(convertEthToWei(5));
                 await HwTokenInstance.approve(DeFiProtocolInstance.address, stakedValue, {from: owner});
@@ -217,7 +217,7 @@ contract('DeFiProtocol', accounts => {
             beforeEach(async () => {
                 HwTokenInstance = await HwToken.new({from:owner});
                 DeFiProtocolInstance = await DeFiProtocol.new(HwTokenInstance.address, {from:owner});
-                await DeFiProtocolInstance.autorizeToken(HwTokenInstance.address, HwTokenInstance.address, new BN(925925925925), {from: owner});
+                await DeFiProtocolInstance.createLiquidityPool(HwTokenInstance.address, HwTokenInstance.address, new BN(925925925925), {from: owner});
                 await HwTokenInstance.transfer(DeFiProtocolInstance.address, convertEthToWei(20), {from: owner});
                 const stakedValue = BigInt(convertEthToWei(5));
                 await HwTokenInstance.approve(DeFiProtocolInstance.address, stakedValue, {from: owner});

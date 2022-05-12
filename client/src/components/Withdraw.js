@@ -18,7 +18,6 @@ export default class DepositWithdraw extends React.Component {
         }
     }
 
-
     computeTokenToWithdraw = (event) => {
         this.recomputeTokenToWithdraw(event.target.value);
     }
