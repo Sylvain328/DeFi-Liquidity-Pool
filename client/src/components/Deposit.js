@@ -1,63 +1,56 @@
-import { balance } from '@openzeppelin/test-helpers';
 import React from 'react';
 import DataContainer from "./DataContainer.js";
 
 export default class DepositWithdraw extends React.Component {
 
-    state = {balance: 0, value: 50, depositAmount: 0, isButtonLocked: false};
-
-
-    constructor(props) {
-        super(props);
-    }
+    state = {sliderValue: 50, depositAmount: 0, isButtonLocked: false};
 
     componentDidMount = async () => {
-
-        let requestManager = this.props.requestManager;
-
-        let accountBalance = await this.props.requestManager.getTokenBalance();
-        let amount = accountBalance * (this.state.value / 100);
-        let isButtonLocked = this.state.value == 0;
-
-        let instance = requestManager.getProtocolEvents();
-        let eventOptions = requestManager.getBaseEventOptions();
-
-        // // On the event, refresh the amounts
-        await instance.events
-        .AmountStaked(eventOptions)
-        .on('data', event => {
-            this.setState({balance: event.returnValues[0] / 1e18});
-            //this.recomputeTokenToDeposit(this.state.value);
-        });
-
-        this.setState({balance: accountBalance, depositAmount: amount});
+        // Set the balance and initialize the slider
+        this.setState({walletBalance: this.props.walletBalance});
+        this.recomputeTokenToDeposit(this.state.sliderValue);
     }
 
+    componentDidUpdate(prevProps, prevState) {
+        // If an external event update the walletBalance, the tokenToDeposit Amount have to be recomputed
+        if (prevProps.walletBalance !== this.props.walletBalance) {
+            this.recomputeTokenToDeposit(this.state.sliderValue);
+        }
+    }
+
+    /**
+     * Compute the token to deposit - Triggered when the user move the slider
+     */
     computeTokenAmount = (event) => {
         this.recomputeTokenToDeposit(event.target.value);
     }
 
+    /**
+     * Compute the token to deposite
+     */
     recomputeTokenToDeposit= (_sliderValue) => {
-        let computeAmount = Number.parseFloat(this.state.balance * (_sliderValue / 100)).toFixed(4);
-        this.state.value = _sliderValue;
-        this.setState({depositAmount: computeAmount, value: _sliderValue});
+        let computeAmount = Number.parseFloat(this.props.walletBalance * (_sliderValue / 100)).toFixed(4);
+        this.setState({depositAmount: computeAmount, sliderValue: _sliderValue});
     }
 
-    depositAmount = async () => {
-        await this.props.requestManager.deposit(this.state.depositAmount);
+    /**
+     * Call the deposit method - Triggered when the user click on the deposit button
+     */
+    depositTokens = async () => {
+        await this.props.depositTokens(this.state.depositAmount);
     }
 
     render(){
         return(
             <div className='DepositWithdraw'>
-                <DataContainer containerClass='PoolDataContainer' indicatorTitle='Wallet balance : ' indicatorValue={this.state.balance} indicatorUnit='HWT'/>
+                <DataContainer containerClass='PoolDataContainer' indicatorTitle='Wallet balance : ' indicatorValue={this.props.walletBalance} indicatorUnit='HWT'/>
                 <div className='SliderSelector'>
                     0%
-                    <input type="range" min="0" max="100" step="0.01" value={this.state.value} onChange={this.computeTokenAmount}></input>
+                    <input type="range" min="0" max="100" step="0.01" value={this.state.sliderValue} onChange={this.computeTokenAmount}></input>
                     100%
                 </div>
                 <DataContainer containerClass='PoolDataContainer' indicatorTitle='Deposit : ' indicatorValue={this.state.depositAmount} indicatorUnit='HWT'/>
-                <div className='DepositWithdrawButton' onClick={this.depositAmount}>Deposit</div>
+                <div className='DepositWithdrawButton' onClick={this.depositTokens}>Deposit</div>
             </div>
         )
     }

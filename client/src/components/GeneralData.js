@@ -1,16 +1,8 @@
 import React from 'react';
 import ProtocolData from './ProtocolData.js';
 import UserData from './UserData.js';
-import RateConverter from "../utils/rateConverter.js";
 
 export default class GeneralData extends React.Component {
-
-    constructor(props) {
-        super(props);
-    }
-    
-    componentDidMount = async () => {
-    }
 
     render(){
         return(

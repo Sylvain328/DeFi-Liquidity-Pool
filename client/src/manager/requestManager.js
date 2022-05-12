@@ -4,12 +4,13 @@ import TokenRequester from "../web3/tokenRequester.js";
 
 export default class RequestManager {
     
-    constructor(_protocolInstance, _tokenInstance, _account) {
+    constructor(_protocolInstance, _tokenInstance, _account, _getBlockNumber) {
         
         this.protocolInstance = _protocolInstance;
         this.protocolRequester = new ProtocolRequester(_protocolInstance, _account);
         this.tokenRequester = new TokenRequester(_tokenInstance, _account);
         this.account = _account;
+        this.getBlockNumber = _getBlockNumber;
     }
 
     getHwtTokenUsdValue = async() => {
@@ -51,17 +52,16 @@ export default class RequestManager {
     }
 
     getProtocolEvents = () => {
-        debugger;
         return this.protocolInstance;
     }
 
-    getBaseEventOptions = () => {
+    getBaseEventOptions = async() => {
 
         let options = {
             filter: {
                 value: [],
             },
-            fromBlock: 0
+            fromBlock: await this.getBlockNumber()
         };
 
         return options;

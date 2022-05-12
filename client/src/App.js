@@ -38,9 +38,13 @@ class App extends Component {
 
       const owner = await instance.methods.owner().call();
       const account = accounts[0];
-      const isOwner = owner == account;
+      const isOwner = owner === account;
 
-      const requestManager = new RequestManager(instance, tokenInstance, account);
+      // Create the manager that will request the different contract requester and return data
+      // For the events, we don't want to get the past events, only actual
+      const requestManager = new RequestManager(instance, tokenInstance, account, async() => {
+        web3.eth.getBlockNumber();
+      });
 
       // Set web3, accounts, and contract to the state, and then proceed with an
       // example of interacting with the contract's methods.

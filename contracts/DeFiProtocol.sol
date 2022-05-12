@@ -76,21 +76,24 @@ contract DeFiProtocol is Ownable {
 
     /**
      * @notice Event informing total amount staked in the Liquidity Pool
+     * @param sender The address that staked in the pool
      * @param stakedAmount The amount that has been staked
      */
-    event AmountStaked (uint stakedAmount);
+    event AmountStaked (address sender, uint stakedAmount);
 
     /**
      * @notice Event informing an amount was unstaked in the Liquidity Pool
+     * @param sender The address that unstaked in the pool
      * @param unstakedAmount The amount that has been unstaked
      */
-    event AmountUnstaked (uint unstakedAmount);
+    event AmountUnstaked (address sender, uint unstakedAmount);
 
     /** 
      * @notice Event informing a reward was send
+     * @param sender The address that claim the reward
      * @param rewardClaimedAmount The amount that has been offered
      */
-    event RewardOffered (uint rewardClaimedAmount);
+    event RewardOffered (address sender, uint rewardClaimedAmount);
 
     // ::::::::::::: Methods ::::::::::::: //
 
@@ -127,7 +130,7 @@ contract DeFiProtocol is Ownable {
         // Update the tvl of the liquidity pool
         totalValueLocked = totalValueLocked  + _amount;
 
-        emit AmountStaked(stakerData.stakedAmount);
+        emit AmountStaked(msg.sender, stakerData.stakedAmount);
     }
 
     /**
@@ -154,7 +157,7 @@ contract DeFiProtocol is Ownable {
         // Send the token back to the sender
         token.transfer(msg.sender, _amount);
         
-        emit AmountUnstaked(_amount);
+        emit AmountUnstaked(msg.sender, stakerData.stakedAmount);
     }
 
     /**
@@ -233,6 +236,6 @@ contract DeFiProtocol is Ownable {
         // Send reward tokens to the msg.sender
         token.transfer(msg.sender, reward);
 
-        emit RewardOffered(reward);
+        emit RewardOffered(msg.sender, reward);
     }
 }

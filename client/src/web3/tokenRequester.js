@@ -1,4 +1,4 @@
-const BigNumber = require('bignumber.js');
+import RateConverter from "../utils/rateConverter.js";
 
 export default class TokenRequester {
 
@@ -9,12 +9,12 @@ export default class TokenRequester {
 
     /** Get the hwt balance for the connected account */
     getBalance = async() => {
-        return await this.token.methods.balanceOf(this.account).call() / 1e18;
+        return RateConverter.convertToEth(await this.token.methods.balanceOf(this.account).call());
     }
 
     /** Approve the transaction on the token constract */
     approve = async(_contractAddress, _valueToStake) => {
         console.log(process.versions)
-        return await this.token.methods.approve(_contractAddress, BigNumber(_valueToStake * 1e18).toFixed()).send({from: this.account});
+        return await this.token.methods.approve(_contractAddress, RateConverter.convertToWei(_valueToStake)).send({from: this.account});
     }
 }

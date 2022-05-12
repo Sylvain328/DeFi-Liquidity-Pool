@@ -74,6 +74,7 @@ contract('DeFiProtocol', accounts => {
             beforeEach(async () => {
                 HwTokenInstance = await HwToken.new({from:owner});
                 DeFiProtocolInstance = await DeFiProtocol.new(HwTokenInstance.address, {from:owner});
+                await HwTokenInstance.transfer(DeFiProtocolInstance.address, convertEthToWei(20), {from: owner});
                 const stakedValue = convertEthToWei(5);
                 await HwTokenInstance.approve(DeFiProtocolInstance.address, stakedValue, {from: owner});
                 await DeFiProtocolInstance.stake(stakedValue, {from: owner});
@@ -105,7 +106,7 @@ contract('DeFiProtocol', accounts => {
             describe("Event cases", () => {
 
                 it("should emit an event when amount is properly unstaked", async () => {
-                    expectEvent(await DeFiProtocolInstance.unstake(convertEthToWei(5), {from: owner}), "AmountUnstaked", {unstakedAmount: new BN(BigInt(5000000000000000000))});
+                    expectEvent(await DeFiProtocolInstance.unstake(convertEthToWei(5), {from: owner}), "AmountUnstaked", {unstakedAmount: new BN(convertEthToWei(0))});
                 });
             });
         });
@@ -117,6 +118,7 @@ contract('DeFiProtocol', accounts => {
             beforeEach(async () => {
                 HwTokenInstance = await HwToken.new({from:owner});
                 DeFiProtocolInstance = await DeFiProtocol.new(HwTokenInstance.address, {from:owner});
+                await HwTokenInstance.transfer(DeFiProtocolInstance.address, convertEthToWei(20), {from: owner});
                 const stakedValue = convertEthToWei(5);
                 await HwTokenInstance.approve(DeFiProtocolInstance.address, stakedValue, {from: owner});
                 await DeFiProtocolInstance.stake(stakedValue, {from: owner});
@@ -157,12 +159,13 @@ contract('DeFiProtocol', accounts => {
             beforeEach(async () => {
                 HwTokenInstance = await HwToken.new({from:owner});
                 DeFiProtocolInstance = await DeFiProtocol.new(HwTokenInstance.address, {from:owner});
-                const stakedValue = BigInt(5000000000000000000);
+                await HwTokenInstance.transfer(DeFiProtocolInstance.address, convertEthToWei(20), {from: owner});
+                const stakedValue = BigInt(convertEthToWei(5));
                 await HwTokenInstance.approve(DeFiProtocolInstance.address, stakedValue, {from: owner});
                 await DeFiProtocolInstance.stake(stakedValue, {from: owner});
             }); 
 
-            it("should return 0 reward if timestamp is didn't move", async () => {
+            it("should return 0 reward if timestamp didn't evolve", async () => {
                 const rewardData = await DeFiProtocolInstance.getRewardAmount({from: owner});
                 expect(new BN(rewardData.reward)).to.be.bignumber.equal(new BN(0));
             });
@@ -211,7 +214,8 @@ contract('DeFiProtocol', accounts => {
             beforeEach(async () => {
                 HwTokenInstance = await HwToken.new({from:owner});
                 DeFiProtocolInstance = await DeFiProtocol.new(HwTokenInstance.address, {from:owner});
-                const stakedValue = BigInt(500000000000000000000);
+                await HwTokenInstance.transfer(DeFiProtocolInstance.address, convertEthToWei(20), {from: owner});
+                const stakedValue = BigInt(convertEthToWei(5));
                 await HwTokenInstance.approve(DeFiProtocolInstance.address, stakedValue, {from: owner});
                 await DeFiProtocolInstance.stake(stakedValue, {from: owner});
                 // Move the timestamp and mine a new block
@@ -243,7 +247,7 @@ contract('DeFiProtocol', accounts => {
 
             it("should return 0.9315 Usd token value", async () => {
                 const value = await DeFiProtocolInstance.hwtTokenUsdValue.call();
-                expect(new BN(value)).to.be.bignumber.equal(new BN(BigInt(931500000000000000)));
+                expect(new BN(value)).to.be.bignumber.equal(new BN(BigInt(convertEthToWei(0.9315))));
             });
         });
     });

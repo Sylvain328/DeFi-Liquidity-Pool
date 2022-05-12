@@ -1,43 +1,48 @@
-import { balance } from '@openzeppelin/test-helpers';
 import React from 'react';
 import DataContainer from "./DataContainer.js";
 
 export default class DepositWithdraw extends React.Component {
 
-    state = {stakedAmount: 0, value: 50, withdrawAmount: 0};
-
-
-    constructor(props) {
-        super(props);
-    }
+    state = {sliderValue: 50, withdrawAmount: 0};
 
     componentDidMount = async () => {
-        let stakedAmount = await this.props.requestManager.getPoolStakedAmount();
-        let withdrawAmount = stakedAmount * (this.state.value / 100);
-        this.setState({stakedAmount: stakedAmount, withdrawAmount: withdrawAmount});
+        // Set the balance and initialize the slider
+        this.setState({userStaked: this.props.userStaked});
+        this.recomputeTokenToWithdraw(this.state.sliderValue);
     }
 
-    computeTokenAmount = (event) => {
-        let computeAmount = Number.parseFloat(this.state.stakedAmount * (event.target.value / 100)).toFixed(4);
-        this.state.value = event.target.value;
-        this.setState({withdrawAmount: computeAmount, value: event.target.value});
+    componentDidUpdate(prevProps, prevState) {
+        // If an external event update the walletBalance, the tokenToDeposit Amount have to be recomputed
+        if (prevProps.userStaked !== this.props.userStaked) {
+            this.recomputeTokenToWithdraw(this.state.sliderValue);
+        }
     }
 
-    WithdrawAmount = async () => {
-        await this.props.requestManager.withdraw(this.state.withdrawAmount);
+
+    computeTokenToWithdraw = (event) => {
+        this.recomputeTokenToWithdraw(event.target.value);
+    }
+
+    recomputeTokenToWithdraw = (_sliderValue) => {
+        let withdrawAmount = Number.parseFloat(this.props.userStaked * (_sliderValue/ 100)).toFixed(4);
+        this.setState({withdrawAmount: withdrawAmount, sliderValue: _sliderValue});
+    }
+
+    withdrawTokens = async () => {
+        await this.props.withdrawTokens(this.state.withdrawAmount);
     }
 
     render(){
         return(
             <div className='DepositWithdraw'>
-                <DataContainer containerClass='PoolDataContainer' indicatorTitle='Staked Amount : ' indicatorValue={this.state.stakedAmount} indicatorUnit='HWT'/>
+                <DataContainer containerClass='PoolDataContainer' indicatorTitle='Staked Amount : ' indicatorValue={this.props.userStaked} indicatorUnit='HWT'/>
                 <div className='SliderSelector'>
                     0%
-                    <input type="range" min="0" max="100" step="0.01" value={this.state.value} onChange={this.computeTokenAmount}></input>
+                    <input type="range" min="0" max="100" step="0.01" value={this.state.sliderValue} onChange={this.computeTokenToWithdraw}></input>
                     100%
                 </div>
                 <DataContainer containerClass='PoolDataContainer' indicatorTitle='Withdrawal : ' indicatorValue={this.state.withdrawAmount} indicatorUnit='HWT'/>
-                <div className='DepositWithdrawButton' onClick={this.WithdrawAmount}>Withdraw</div>
+                <div className='DepositWithdrawButton' onClick={this.withdrawTokens}>Withdraw</div>
             </div>
         )
     }

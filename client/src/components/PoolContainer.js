@@ -1,15 +1,7 @@
 import React from 'react';
-import RateConverter from "../utils/rateConverter.js";
 import LiquidityPool from './LiquidityPool.js';
 
 export default class PoolContainer extends React.Component {
-
-    constructor(props) {
-        super(props);
-    }
-    
-    componentDidMount = async () => {
-    }
 
     render(){
         return(

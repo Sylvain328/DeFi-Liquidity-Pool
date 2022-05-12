@@ -1,15 +1,11 @@
 import React from 'react';
-import RateConverter from "../utils/rateConverter.js";
 
 export default class Header extends React.Component {
 
     state = {price: 0}
 
-    constructor(props) {
-        super(props);
-    }
-    
     componentDidMount = async () => {
+        // Get the price of 1 HWT token
         const price = await this.props.requestManager.getHwtTokenUsdValue();
         this.setState({price: price});
     }
