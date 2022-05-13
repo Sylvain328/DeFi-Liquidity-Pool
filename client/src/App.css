@@ -197,22 +197,6 @@ body {
   padding: 15px 0;
 }
 
-.DepositWithdrawButton, .ClaimRewardButton {
-  width: 320px;
-  height: 38px;
-  background-color: #df0e69;
-  cursor: pointer;
-  border-radius: 5px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: 15px;
-}
-
-.DepositWithdrawButton:hover, .ClaimRewardButton:hover {
-  background-color: #ed69a2;
-}
-
 .SliderSelector {
   display: flex;
   justify-content: center;
@@ -463,4 +447,62 @@ input[type="range"]::-ms-fill-upper {
 
 .LinkLogo:before {
   content:url(./images/link.png);
+}
+
+
+.Button {
+  position: relative;
+  padding: 8px 16px;
+  background: #df0e69;;
+  border: none;
+  outline: none;
+  border-radius: 5px;
+  cursor: pointer;
+  width: 320px;
+  font-size: 1em;
+  margin-top: 10px;
+}
+
+.Button:hover {
+  background: #ed69a2;;
+}
+
+.Button:active {
+  background: #ed69a2;
+}
+
+.ButtonText {
+  color: #ffffff;
+  transition: all 0.2s;
+}
+
+.Button-loading .ButtonText {
+  visibility: hidden;
+  opacity: 0;
+}
+
+.Button-loading::after {
+  content: "";
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: auto;
+  border: 4px solid transparent;
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: Button-loading-spinner 1s ease infinite;
+}
+
+@keyframes Button-loading-spinner {
+  from {
+    transform: rotate(0turn);
+  }
+
+  to {
+    transform: rotate(1turn);
+  }
 }

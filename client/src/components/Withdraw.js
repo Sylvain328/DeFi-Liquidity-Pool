@@ -41,7 +41,10 @@ export default class DepositWithdraw extends React.Component {
                     100%
                 </div>
                 <DataContainer containerClass='PoolDataContainer' indicatorTitle='Withdrawal : ' indicatorValue={this.state.withdrawAmount} indicatorUnit={this.props.symbol}/>
-                <div className='DepositWithdrawButton' onClick={this.withdrawTokens}>Withdraw</div>
+
+                <button type="Button" className={"Button " + this.props.buttonClass} disabled={this.state.isButtonLocked} onClick={this.withdrawTokens}>
+                    <span className="ButtonText">Withdraw</span>
+                </button>
             </div>
         )
     }

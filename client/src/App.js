@@ -4,10 +4,10 @@ import HWT from "./contracts/HWT.json";
 import GUM from "./contracts/GUM.json";
 import ERC20 from "./contracts/ERC20.json";
 import AppContainer from "./components/AppContainer.js";
+import ProtocolRequester from "./web3/protocolRequester.js";
 import getWeb3 from "./getWeb3";
 
 import PoolManager from "./manager/poolManager";
-import RequestManager from "./manager/requestManager.js";
 
 import "./App.css";
 
@@ -18,7 +18,6 @@ class App extends Component {
     account: null, 
     protocolInstance: null, 
     isOwner: null, 
-    requestManager: null, 
     poolManager: null,
     hwtPrice: 0
   };
@@ -55,28 +54,28 @@ class App extends Component {
 
       
       // Get the LINK token instance
-      var linkInstance = new web3.eth.Contract(ERC20.abi, '0xa36085F69e2889c224210F603D836748e7dC0088');
+      //var linkInstance = new web3.eth.Contract(ERC20.abi, '0xa36085F69e2889c224210F603D836748e7dC0088');
 
       // Define account and check if it's the owner
       const owner = await protocolInstance.methods.owner().call();
       const account = accounts[0];
       const isOwner = owner === account;
 
-      // Create the manager that will request the different contract requester and return data
-      // For the events, we don't want to get the past events, only actual
-      const requestManager = new RequestManager(protocolInstance, account, async() => {
+      // Create the Protocol requester that will request the Smart contract
+      // For the events, we don't want to get the past events, only actual, that's why we pass the getBlockNumber as callback
+      const protocolRequester = new ProtocolRequester(protocolInstance, account, async() => {
         web3.eth.getBlockNumber();
       });
 
       // Fake token price are fixed
-      const hwtTokenPrice = await requestManager.getHwtTokenUsdValue();
-      const flpTokenPrice = await requestManager.getFlpTokenUsdValue();
+      const hwtTokenPrice = await protocolRequester.getHwtTokenUsdValue();
+      const flpTokenPrice = await protocolRequester.getFlpTokenUsdValue();
 
       // Create pool manager and pool
-      const poolManager = new PoolManager(requestManager);
+      const poolManager = new PoolManager(protocolRequester);
       await poolManager.addNewPool(0, hwtInstance, account, true, hwtTokenPrice, 'HwtLogo');
       await poolManager.addNewPool(1, gumInstance, account, true, flpTokenPrice, 'GumLogo');
-      await poolManager.addNewPool(2, linkInstance, account, false, 0, 'LinkLogo');
+      //await poolManager.addNewPool(2, linkInstance, account, false, 0, 'LinkLogo');
 
       // Set web3, accounts, and contract to the state, and then proceed with an
       // example of interacting with the contract's methods.
@@ -84,7 +83,6 @@ class App extends Component {
         account: account, 
         isOwner: isOwner,
         protocolInstance: protocolInstance,
-        requestManager: requestManager,
         poolManager: poolManager,
         hwtPrice: hwtTokenPrice
       });

@@ -30,7 +30,7 @@ contract DeFiProtocol is Ownable {
      * @dev aggregator address is used to get price over the Chainlink Oracle
      */
     struct LiquidityPoolData {
-        bool isAuthorized;
+        bool isCreated;
         uint rewardPerSecond;
         address oracleAggregatorAddress;
         uint totalValueLocked;
@@ -62,7 +62,7 @@ contract DeFiProtocol is Ownable {
      * @notice Modifier that allow only authorizedToken for liquidity pool
      */
     modifier onlyAuthorizedToken(address _tokenAddress) {
-        require(liquidityPoolData[_tokenAddress].isAuthorized, "Only Authorized token can do this action");
+        require(liquidityPoolData[_tokenAddress].isCreated, "Only Authorized token address can be used for this action");
         _;
     }
 
@@ -93,11 +93,11 @@ contract DeFiProtocol is Ownable {
     event RewardOffered (address sender, address tokenAddress, uint rewardClaimedAmount);
 
     /**
-     * @notice Event informing a new token is authorized for liquidity pools
-     * @param tokenAddress The address of the new authorized token
+     * @notice Event informing a new liquidity pool is created
+     * @param tokenAddress The address of the pool token
      * @param rewardPerSecond The reward rate per second
      */
-    event TokenAuthorized (address tokenAddress, uint rewardPerSecond);
+    event PoolCreated (address tokenAddress, uint rewardPerSecond);
 
     // ::::::::::::: Methods ::::::::::::: //
 
@@ -108,13 +108,13 @@ contract DeFiProtocol is Ownable {
      * @param _rewardPerSecond The win rate of the liquidity pool
      */
     function createLiquidityPool(address _tokenAddress, address _oracleAggregatorAddress, uint _rewardPerSecond) external onlyOwner {
-        require(!liquidityPoolData[_tokenAddress].isAuthorized, "This token is already authorized");
+        require(!liquidityPoolData[_tokenAddress].isCreated, "This pool is already created");
 
         liquidityPoolData[_tokenAddress].rewardPerSecond = _rewardPerSecond;
         liquidityPoolData[_tokenAddress].oracleAggregatorAddress = _oracleAggregatorAddress;
-        liquidityPoolData[_tokenAddress].isAuthorized = true;
+        liquidityPoolData[_tokenAddress].isCreated = true;
 
-        emit TokenAuthorized(_tokenAddress, _rewardPerSecond);
+        emit PoolCreated(_tokenAddress, _rewardPerSecond);
     }
 
     /**

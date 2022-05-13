@@ -2,9 +2,10 @@ import RateConverter from "../utils/rateConverter.js";
 
 export default class ProtocolRequester {
 
-    constructor(_contract, _account) {
+    constructor(_contract, _account, _getBlockNumber) {
         this.contract = _contract;
         this.account = _account;
+        this.getBlockNumber = _getBlockNumber;
     }
 
     /** Get the reward Amount of the HWT Token Price */
@@ -17,7 +18,7 @@ export default class ProtocolRequester {
         return RateConverter.convertToEth(await this.contract.methods.flpTokenUsdValue().call());
     }
 
-    /** Get the TVL on the contract */
+    /** Get the TVL of a pool on the contract */
     getTotalValueLocked = async(_address) => {
         return RateConverter.convertToEth(await this.contract.methods.getTotalValueLocked(_address).call());
     }
@@ -37,7 +38,7 @@ export default class ProtocolRequester {
         return RateConverter.convertToEth(await this.contract.methods.getStakedAmount(_address).call({from: this.account}));
     }
 
-    /** Get the reward amount */
+    /** Get the reward amount of the pool */
     getRewardAmount = async(_address) => {
         return RateConverter.convertToEth(await this.contract.methods.getRewardAmount(_address).call({from: this.account}));
     }
@@ -57,5 +58,27 @@ export default class ProtocolRequester {
      */
     getTokenPrice = async(_address) => {
         return RateConverter.convertFromPriceFeed(await this.contract.methods.getTokenPrice(_address).call());
+    }
+
+    /**
+     * Get the contract events
+     */
+    getProtocolEvents = () => {
+        return this.contract.events;
+    }
+
+    /**
+     * Get the base options for events from last block
+     */
+    getBaseEventOptions = async() => {
+
+        let options = {
+            filter: {
+                value: [],
+            },
+            fromBlock: await this.getBlockNumber()
+        };
+
+        return options;
     }
 }

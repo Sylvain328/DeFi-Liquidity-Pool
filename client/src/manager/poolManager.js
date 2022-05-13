@@ -2,9 +2,9 @@ import LiquidityPool from "../models/liquidityPool.js";
 
 export default class PoolManager {
 
-    constructor(_requestManager) {
+    constructor(_protocolRequester) {
 
-        this.requestManager = _requestManager;
+        this.protocolRequester = _protocolRequester;
         this.pools = {};
         this.allPoolsTvl = 0;
         this.allPoolsUserStakedUsd = 0;
@@ -14,7 +14,7 @@ export default class PoolManager {
 
     addNewPool = async (_id, _tokenInstance, _account, _isFakeToken, _basePrice, _cssLogoClass) => {
 
-        const pool = new LiquidityPool(this.requestManager, _tokenInstance, _account, _isFakeToken, _basePrice, _cssLogoClass);
+        const pool = new LiquidityPool(this.protocolRequester, _tokenInstance, _account, _isFakeToken, _basePrice, _cssLogoClass);
         await pool.initialize();
 
         this.pools[_id] = pool;

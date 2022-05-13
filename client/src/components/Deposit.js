@@ -7,7 +7,7 @@ export default class DepositWithdraw extends React.Component {
 
     componentDidMount = async () => {
         // Set the balance and initialize the slider
-        this.setState({walletBalance: this.props.walletBalance});
+        this.setState({walletBalance: this.props.walletBalance, buttonClass: ""});
         this.recomputeTokenToDeposit(this.state.sliderValue);
     }
 
@@ -37,7 +37,11 @@ export default class DepositWithdraw extends React.Component {
      * Call the deposit method - Triggered when the user click on the deposit button
      */
     depositTokens = async () => {
-        await this.props.depositTokens(this.state.depositAmount);
+        await this.props.depositTokens(this.state.depositAmount);     
+    }
+
+    clickTest = () => {
+        this.setState({isButtonLocked: true, buttonClass: 'Button-loading'})
     }
 
     render(){
@@ -50,7 +54,10 @@ export default class DepositWithdraw extends React.Component {
                     100%
                 </div>
                 <DataContainer containerClass='PoolDataContainer' indicatorTitle='Deposit : ' indicatorValue={this.state.depositAmount} indicatorUnit={this.props.symbol}/>
-                <div className='DepositWithdrawButton' onClick={this.depositTokens}>Deposit</div>
+            
+                <button type="Button" className={"Button " + this.props.buttonClass} disabled={this.state.isButtonLocked} onClick={this.depositTokens}>
+                    <span className="ButtonText">Deposit</span>
+                </button>
             </div>
         )
     }
