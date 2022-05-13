@@ -27,12 +27,12 @@ contract DeFiProtocol is Ownable {
 
     /**
      * @notice Contain liquidity pool data
-     * @dev aggregator is used to get price over the Chainlink Oracle
+     * @dev aggregator address is used to get price over the Chainlink Oracle
      */
     struct LiquidityPoolData {
         bool isAuthorized;
         uint rewardPerSecond;
-        AggregatorV3Interface aggregator;
+        address oracleAggregatorAddress;
         uint totalValueLocked;
         mapping(address => StakerData) stakerData;
     }
@@ -49,6 +49,12 @@ contract DeFiProtocol is Ownable {
      * @dev As our Hwt token don't have any value on the market, we use a basic multiplier
      */
     uint public hwtTokenUsdValue = 931500000000000000;
+
+    /**
+     * @notice Token multiplier to give a price on the Flp token
+     * @dev As our Flp token don't have any value on the market, we use a basic multiplier
+     */
+    uint public flpTokenUsdValue = 4932100000000000000;
 
     // ::::::::::::: Modifiers ::::::::::::: //
 
@@ -71,20 +77,12 @@ contract DeFiProtocol is Ownable {
     // ::::::::::::: Events ::::::::::::: //
 
     /**
-     * @notice Event informing total amount staked in the Liquidity Pool
+     * @notice Event informing the staked amount was updated
      * @param sender The address that staked in the pool
      * @param tokenAddress The liquidity pool token
      * @param stakedAmount The amount that has been staked
      */
-    event AmountStaked (address sender, address tokenAddress, uint stakedAmount);
-
-    /**
-     * @notice Event informing an amount was unstaked in the Liquidity Pool
-     * @param sender The address that unstaked in the pool
-     * @param tokenAddress The liquidity pool token
-     * @param unstakedAmount The amount that has been unstaked
-     */
-    event AmountUnstaked (address sender, address tokenAddress, uint unstakedAmount);
+    event StakedAmountUpdated (address sender, address tokenAddress, uint stakedAmount);
 
     /** 
      * @notice Event informing a reward was send
@@ -113,7 +111,7 @@ contract DeFiProtocol is Ownable {
         require(!liquidityPoolData[_tokenAddress].isAuthorized, "This token is already authorized");
 
         liquidityPoolData[_tokenAddress].rewardPerSecond = _rewardPerSecond;
-        liquidityPoolData[_tokenAddress].aggregator = AggregatorV3Interface(_oracleAggregatorAddress);
+        liquidityPoolData[_tokenAddress].oracleAggregatorAddress = _oracleAggregatorAddress;
         liquidityPoolData[_tokenAddress].isAuthorized = true;
 
         emit TokenAuthorized(_tokenAddress, _rewardPerSecond);
@@ -146,7 +144,7 @@ contract DeFiProtocol is Ownable {
         // Update the tvl of the liquidity pool
         poolData.totalValueLocked = poolData.totalValueLocked  + _amount;
 
-        emit AmountStaked(msg.sender, _tokenAddress, stakerData.stakedAmount);
+        emit StakedAmountUpdated(msg.sender, _tokenAddress, stakerData.stakedAmount);
     }
 
     /**
@@ -179,7 +177,7 @@ contract DeFiProtocol is Ownable {
         // Send the token back to the sender
         IERC20(_tokenAddress).transfer(msg.sender, _amount);
         
-        emit AmountUnstaked(msg.sender, _tokenAddress, stakerData.stakedAmount);
+        emit StakedAmountUpdated(msg.sender, _tokenAddress, stakerData.stakedAmount);
     }
 
     /**
@@ -195,17 +193,22 @@ contract DeFiProtocol is Ownable {
      * @notice Get the token price in USD
      * @dev USD Price is retrieved thanks to Chainlink
      * @param _tokenAddress The authorized token address to get price
-     * @return tokenPrice price of the token
+     * @return int price of the token
      */
-    function getTokenPrice(address _tokenAddress) external view onlyAuthorizedToken(_tokenAddress) returns (int tokenPrice) {
+    function getTokenPrice(address _tokenAddress) external view onlyAuthorizedToken(_tokenAddress) returns (int) {
 
+        // Retrieve oracle address
+        address oracleAddress = liquidityPoolData[_tokenAddress].oracleAggregatorAddress;
+        AggregatorV3Interface priceFeed = AggregatorV3Interface(oracleAddress);
+
+        // get price
         (
             /* uint80 roundID */,
             int price,
             /* uint256 startedAt, */,
             /* uint256 timeStamp, */,
             /* uint80 answeredInRound */
-        ) = liquidityPoolData[_tokenAddress].aggregator.latestRoundData();
+        ) = priceFeed.latestRoundData();
 
         return(price);
     }

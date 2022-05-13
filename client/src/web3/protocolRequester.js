@@ -12,6 +12,11 @@ export default class ProtocolRequester {
         return RateConverter.convertToEth(await this.contract.methods.hwtTokenUsdValue().call());
     }
 
+    /** Get the reward Amount of the HWT Token Price */
+    getFlpTokenUsdValue = async() => {
+        return RateConverter.convertToEth(await this.contract.methods.flpTokenUsdValue().call());
+    }
+
     /** Get the TVL on the contract */
     getTotalValueLocked = async(_address) => {
         return RateConverter.convertToEth(await this.contract.methods.getTotalValueLocked(_address).call());
@@ -40,5 +45,17 @@ export default class ProtocolRequester {
     /** Claim the reward from the pool */
     claimPoolReward = async(_address) => {
         await this.contract.methods.claimReward(_address).send({from: this.account});
+    }
+
+    /** Get the pool reward per second */
+    getPoolRewardPerSecond = async(_address) => {
+        return RateConverter.convertToEth(await this.contract.methods.getRewardPerSecond(_address).call({from: this.account}));
+    }
+
+    /**
+     * Get the Token price via Chainlink
+     */
+    getTokenPrice = async(_address) => {
+        return RateConverter.convertFromPriceFeed(await this.contract.methods.getTokenPrice(_address).call());
     }
 }

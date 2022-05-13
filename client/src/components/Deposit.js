@@ -3,7 +3,7 @@ import DataContainer from "./DataContainer.js";
 
 export default class DepositWithdraw extends React.Component {
 
-    state = {sliderValue: 50, depositAmount: 0, isButtonLocked: false};
+    state = { sliderValue: 50, depositAmount: 0, isButtonLocked: false };
 
     componentDidMount = async () => {
         // Set the balance and initialize the slider
@@ -29,7 +29,7 @@ export default class DepositWithdraw extends React.Component {
      * Compute the token to deposite
      */
     recomputeTokenToDeposit= (_sliderValue) => {
-        let computeAmount = Number.parseFloat(this.props.walletBalance * (_sliderValue / 100)).toFixed(4);
+        let computeAmount = Number.parseFloat(this.props.walletBalance * (_sliderValue / 100));
         this.setState({depositAmount: computeAmount, sliderValue: _sliderValue});
     }
 
@@ -43,13 +43,13 @@ export default class DepositWithdraw extends React.Component {
     render(){
         return(
             <div className='DepositWithdraw'>
-                <DataContainer containerClass='PoolDataContainer' indicatorTitle='Wallet balance : ' indicatorValue={this.props.walletBalance} indicatorUnit='HWT'/>
+                <DataContainer containerClass='PoolDataContainer' indicatorTitle='Wallet balance : ' indicatorValue={this.props.walletBalance} indicatorUnit={this.props.symbol}/>
                 <div className='SliderSelector'>
                     0%
-                    <input type="range" min="0" max="100" step="0.01" value={this.state.sliderValue} onChange={this.computeTokenAmount}></input>
+                    <input type="range" min="0" max="100" step="0.0001" value={this.state.sliderValue} onChange={this.computeTokenAmount}></input>
                     100%
                 </div>
-                <DataContainer containerClass='PoolDataContainer' indicatorTitle='Deposit : ' indicatorValue={this.state.depositAmount} indicatorUnit='HWT'/>
+                <DataContainer containerClass='PoolDataContainer' indicatorTitle='Deposit : ' indicatorValue={this.state.depositAmount} indicatorUnit={this.props.symbol}/>
                 <div className='DepositWithdrawButton' onClick={this.depositTokens}>Deposit</div>
             </div>
         )

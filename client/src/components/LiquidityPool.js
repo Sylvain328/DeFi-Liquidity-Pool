@@ -7,28 +7,45 @@ import RateConverter from "../utils/rateConverter.js";
 
 export default class LiquidityPool extends React.Component {
 
-    state = {walletBalance: 0, tokenPrice: 0, poolTvl: 0, poolTvlUsd: 0, userStaked: 0, userStakedUsd: 0, userReward: 0, userRewardUsd: 0}
+    state = {
+        liquidityPool: null, 
+        symbol: null, 
+        dailyReward: 0,
+        walletBalance: 0, 
+        tokenPrice: 0, 
+        poolTvl: 0, 
+        poolTvlUsd: 0, 
+        userStaked: 0, 
+        userStakedUsd: 0, 
+        userReward: 0, 
+        userRewardUsd: 0
+    }
     
     componentDidMount = async() => {
 
-        this.state.tokenPrice = await this.props.requestManager.getHwtTokenUsdValue();
+        // Fixed state
+        this.state.liquidityPool = this.props.liquidityPool;
+        this.setState({
+            liquidityPool: this.state.liquidityPool, 
+            symbol: this.props.liquidityPool.symbol, 
+            dailyReward: this.props.liquidityPool.dailyReward,
+            cssLogoClass: this.props.liquidityPool.cssLogoClass});
+
+        // Refresh variable state
+        this.initializePoolData();
 
         // Bind the method triggered by pool buttons Deposit and Withdraw
         this.depositTokens = this.depositTokens.bind(this);
         this.withdrawTokens = this.withdrawTokens.bind(this);
 
-        // Listent the Withdraw and deposit events
-        this.listenWithdrawEvent();
-        this.listenDepositEvent();
-
-        // Initialize pool data
-        await this.computePoolTvl();
-        await this.computeUserStaked();
-        await this.computeUserReward();
-        await this.updateUserWalletBalance();
+        // Listen when staked amount is update to refresh data
+        this.listenStakedAmountUpdatedEvent();
 
         // Create a refresh interval for the reward amount
-        this.refreshRewardInterval = setInterval(async () => await this.computeUserReward(), 5000);     
+        this.refreshRewardInterval = setInterval(async () => {
+            await this.updateRewardAmount()
+            this.props.updateAllPoolsData();
+        }, 10000);     
     }
 
     componentWillUnmount = async() => {
@@ -36,98 +53,93 @@ export default class LiquidityPool extends React.Component {
         clearInterval(this.refreshRewardInterval);
     }
 
-    /**
-     * Compute the TVL and setState the TVL and TVL in USD of the pool
-     */
-    computePoolTvl = async() => {
-
-        let poolTvl = await this.props.requestManager.getSinglePoolTvl(this.props.tokenAddress);
-        let poolTvlUsd = poolTvl * this.state.tokenPrice;
-        this.setState({poolTvl: poolTvl.toFixed(4), poolTvlUsd: poolTvlUsd.toFixed(4)}); 
-    } 
-    
-    /**
-     * Compute the amount and setState the user stakedAmount and stakedAmount in Usd of the pool
-     */
-    computeUserStaked = async() => {
-        
-        let userStaked = await this.props.requestManager.getPoolStakedAmount(this.props.tokenAddress);
-        let userStakedUsd = userStaked * this.state.tokenPrice;
-        this.setState({ userStaked: userStaked.toFixed(4), userStakedUsd: userStakedUsd.toFixed(4) }); 
+    initializePoolData = async() => {
+        this.setState({
+            poolTvl: this.state.liquidityPool.poolTvl,
+            poolTvlUsd: this.state.liquidityPool.poolTvlUsd, 
+            tokenPrice: this.state.liquidityPool.tokenPrice,
+            walletBalance: this.state.liquidityPool.walletBalance,
+            userStaked: this.state.liquidityPool.userStaked,
+            userStakedUsd: this.state.liquidityPool.userStakedUsd,
+            userReward: this.state.liquidityPool.userReward,
+            userRewardUsd: this.state.liquidityPool.userRewardUsd
+        });
     }
 
-    /**
-     * Compute the reward and setState the user reward and user reward in Usd of the pool
-     */
-    computeUserReward = async() => {
+    updateGlobalPoolData = async() => {
 
-        let userReward = await this.props.requestManager.getPoolRewardAmount(this.props.tokenAddress);
-        let userRewardUsd = userReward * this.state.tokenPrice;
-        this.setState({ userReward: userReward.toFixed(4), userRewardUsd: userRewardUsd.toFixed(4) }); 
+        await this.state.liquidityPool.refreshGlobalPoolData();
+
+        // If token price change, then the usd stakedAmount have to be recomputed
+        // This case happens when the event is called
+        if(this.state.tokenPrice != this.state.liquidityPool.tokenPrice) {
+            this.state.liquidityPool.userStakedUsd = this.state.liquidityPool.userStaked * this.state.liquidityPool.tokenPrice;
+            this.setState({userStakedUsd: this.state.liquidityPool.userStakedUsd});
+        }
+
+        this.setState({
+            poolTvl: this.state.liquidityPool.poolTvl,
+            poolTvlUsd: this.state.liquidityPool.poolTvlUsd, 
+            tokenPrice: this.state.liquidityPool.tokenPrice,
+        });
     }
 
-    /**
-     * Get the user Balance for the pool token
-     */
-     updateUserWalletBalance = async() => {
+    initializeUserPoolData = async() => {
+        await this.state.liquidityPool.initializeUserPoolData();
+        this.setState({
+            walletBalance: this.state.liquidityPool.walletBalance,
+            userStaked: this.state.liquidityPool.userStaked,
+            userStakedUsd: this.state.liquidityPool.userStakedUsd,
+            userReward: this.state.liquidityPool.userReward,
+            userRewardUsd: this.state.liquidityPool.userRewardUsd
+        });
+    }
 
-        let walletBalance = await this.props.requestManager.getTokenBalance(this.props.tokenId, this.props.tokenAddress);
-        this.setState({ walletBalance: walletBalance.toFixed(4) }); 
+    updateUserStakedAmount = async(_amount) => {
+        await this.state.liquidityPool.updateUserStakedAmount(_amount);
+        this.setState({
+            walletBalance: this.state.liquidityPool.walletBalance,
+            userStaked: this.state.liquidityPool.userStaked,
+            userStakedUsd: this.state.liquidityPool.userStakedUsd,
+        });
+    }
+
+    updateRewardAmount = async() => {
+        await this.state.liquidityPool.updateUserReward();
+        this.setState({userReward: this.state.liquidityPool.userReward, userRewardUsd: this.state.liquidityPool.userRewardUsd})
+    }
+
+    recomputeUserStakedUsdAmount = async() => {
+        this.setState({
+            userStakedUsd: this.state.liquidityPool.userStaked * this.state.tokenPrice,
+        });
     }
 
     /**
      * Listen the Withdraw event to refresh Liquidity pool data
      */
-    listenWithdrawEvent = async() => {
+    listenStakedAmountUpdatedEvent = async() => {
 
-        let instance = this.props.requestManager.getProtocolEvents();
-        let eventOptions = await this.props.requestManager.getBaseEventOptions();
+        let eventOptions = await this.state.liquidityPool.getEventOptions()
+        let events = this.state.liquidityPool.getEvents();
 
         // When amount is unstaked, data should be refresh
-        await instance.events
-        .AmountUnstaked(eventOptions)
+        await events
+        .StakedAmountUpdated(eventOptions)
         .on('data', async event => {
             
-            // Refresh the pool TVL, even if the event isn't for this account
-            await this.computePoolTvl();
-
             // Refresh the user pool data only if the event is triggered by the user
             // and for this specific pool
-            if(event.returnValues[0] === this.props.requestManager.account &&
-               event.returnValues[1] === this.props.tokenAddress) {
-                
-                // Refresh staked amount and staked amount price in US
-                let userStaked = RateConverter.convertToEth(event.returnValues[2]);
-                let userStakedUsd = userStaked * this.state.tokenPrice;
-                this.setState({userStaked: userStaked, userStakedUsd: userStakedUsd});
-                // Update the user wallet balance
-                await this.updateUserWalletBalance();
+            if(event.returnValues[0] === this.state.liquidityPool.account &&
+               event.returnValues[1] === this.state.liquidityPool.address) {
+                this.updateUserStakedAmount(RateConverter.convertToEth(event.returnValues[2]));  
             }
-        });
-    }
 
-    /**
-     * Listen the deposit event to refresh Liquidity pool data
-     */
-    listenDepositEvent = async() => {
-
-        let instance = this.props.requestManager.getProtocolEvents();
-        let eventOptions = await this.props.requestManager.getBaseEventOptions();
-
-        // When amount is staked, data should be refresh
-        await instance.events
-        .AmountStaked(eventOptions)
-        .on('data', async event => {
             // Refresh the pool TVL, even if the event isn't for this account
-            await this.computePoolTvl();
-
-            // Run the refresh only if the event comes from the connected account
-            // and for this specific pool
-            if(event.returnValues[0] === this.props.requestManager.account && 
-               event.returnValues[1] === this.props.tokenAddress) {
-                await this.updateUserWalletBalance();
-                await this.computeUserStaked(); 
-            }
+            await this.updateGlobalPoolData(true);
+            // Refresh all pools data
+            this.props.updateAllPoolsData();
+            
         });
     }
 
@@ -135,51 +147,49 @@ export default class LiquidityPool extends React.Component {
      * Deposit the amount selected by the user - Triggered when user click on the deposit button
      */
     depositTokens = async (_amount) => {
-        await this.props.requestManager.deposit(this.props.tokenId, this.props.tokenAddress, _amount);
+        await this.state.liquidityPool.depositTokens(_amount);
     }
 
     /**
      * Withdraw the amount selected by the user - Triggered when user click on the withdraw button
      */
     withdrawTokens = async (_amount) => {
-        await this.props.requestManager.withdraw(this.props.tokenAddress, _amount);
+        await this.state.liquidityPool.withdrawTokens(_amount);
     }
 
-    /**
-     * Claim the user reward on the pool - Triggered when the user click on the "claim reward" button
-     */
-    claimReward = async() => {
-        await this.props.requestManager.claimPoolReward(this.props.tokenAddress);
+    claimReward = async () => {
+        await this.state.liquidityPool.claimReward();
     }
 
     render(){
         return(
             <div className='LiquidityPool'>
-                <div className='HwtLogo'>
+                <div className={this.state.cssLogoClass}>
                 </div>
                 <div className="PoolBaseInfo">
-                    <DataContainer containerClass='PoolDataContainer' indicatorTitle='Daily reward' indicatorValue='8' indicatorUnit='%'/>
+                    <DataContainer containerClass='PoolDataContainer' indicatorTitle='Daily reward' indicatorValue={this.state.dailyReward} indicatorUnit='%'/>
                 </div>
                 <div className="PoolStakedAmount">
-                    <DataContainer containerClass='PoolDataContainer' indicatorTitle='TVL' indicatorValue={this.state.poolTvl} indicatorUnit='HWT'/>
-                    <DataContainer containerClass='PoolDataContainer' indicatorTitle='TVL $' indicatorValue={this.state.poolTvlUsd} indicatorUnit='USD'/>
-                    <DataContainer containerClass='PoolDataContainer' indicatorTitle='User staked' indicatorValue={this.state.userStaked} indicatorUnit='HWT'/>
-                    <DataContainer containerClass='PoolDataContainer' indicatorTitle='User staked $' indicatorValue={this.state.userStakedUsd} indicatorUnit='USD'/>
+                    <DataContainer containerClass='PoolDataContainer' indicatorTitle={'1 ' + this.state.symbol + ':'} indicatorValue={this.state.tokenPrice} indicatorUnit='$'/>
+                    <DataContainer containerClass='PoolDataContainer' indicatorTitle='TVL' indicatorValue={this.state.poolTvl} indicatorUnit={this.state.symbol}/>
+                    <DataContainer containerClass='PoolDataContainer' indicatorTitle='TVL $' indicatorValue={this.state.poolTvlUsd.toFixed(2)} indicatorUnit='$'/>
+                    <DataContainer containerClass='PoolDataContainer' indicatorTitle='User staked' indicatorValue={this.state.userStaked} indicatorUnit={this.state.symbol}/>
+                    <DataContainer containerClass='PoolDataContainer' indicatorTitle='User staked $' indicatorValue={this.state.userStakedUsd.toFixed(2)} indicatorUnit='$'/>
                 </div>
                 <WithdrawDepositTabs>
                     <div label='Deposit'>
-                        <Deposit walletBalance={this.state.walletBalance} depositTokens={this.depositTokens} />
+                        <Deposit walletBalance={this.state.walletBalance} depositTokens={this.depositTokens} symbol={this.state.symbol}/>
                     </div>
                     <div label='Withdraw'>
-                        <Withdraw userStaked={this.state.userStaked} withdrawTokens={this.withdrawTokens} />
+                        <Withdraw userStaked={this.state.userStaked} withdrawTokens={this.withdrawTokens} symbol={this.state.symbol}/>
                     </div>
                 </WithdrawDepositTabs>
                 <div className='RewardContent'>
                     <div className='RewardPoolTitle'>
                         <h3>Reward</h3>
                     </div>
-                    <DataContainer containerClass='PoolDataContainer' indicatorTitle='Reward HWT' indicatorValue={this.state.userReward} indicatorUnit='HWT'/>
-                    <DataContainer containerClass='PoolDataContainer' indicatorTitle='Reward Value' indicatorValue={this.state.userRewardUsd} indicatorUnit='USD'/>
+                    <DataContainer containerClass='PoolDataContainer' indicatorTitle='Reward HWT' indicatorValue={this.state.userReward.toFixed(2)} indicatorUnit='HWT'/>
+                    <DataContainer containerClass='PoolDataContainer' indicatorTitle='Reward Value' indicatorValue={this.state.userRewardUsd.toFixed(2)} indicatorUnit='USD'/>
                     <div className='ClaimRewardButton' onClick={this.claimReward}>Claim Reward</div>
                 </div>
             </div>

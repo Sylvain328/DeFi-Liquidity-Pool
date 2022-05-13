@@ -3,30 +3,31 @@ import ProtocolRequester from "../web3/protocolRequester.js";
 
 export default class RequestManager {
     
-    constructor(_protocolInstance, _poolManagers, _account, _getBlockNumber) {
+    constructor(_protocolInstance, _account, _getBlockNumber) {
         
         this.protocolInstance = _protocolInstance;
         this.protocolRequester = new ProtocolRequester(_protocolInstance, _account);
-        this.poolManagers = _poolManagers;
         this.account = _account;
         this.getBlockNumber = _getBlockNumber;
     }
 
-    getHwtTokenUsdValue = async(_address) => {
-        return await this.protocolRequester.getHwtTokenUsdValue(_address);
+    getHwtTokenUsdValue = async() => {
+        return await this.protocolRequester.getHwtTokenUsdValue();
     }
 
-    // getAllPoolsTvl = async(_address) => {
-    //     return await this.protocolRequester.getTotalValueLocked()
-    // }
+    getFlpTokenUsdValue = async() => {
+        return await this.protocolRequester.getFlpTokenUsdValue();
+    }
+
+    getTokenPrice = async(_address) => {
+        return await this.protocolRequester.getTokenPrice(_address);
+    }
 
     getSinglePoolTvl = async(_address) => {
         return await this.protocolRequester.getTotalValueLocked(_address);
     }
 
-    deposit = async(_tokenId, _address, _depositAmount) => {
-
-        await this.poolManagers[_tokenId].tokenRequester.approve(this.protocolRequester.contract._address, _depositAmount); 
+    deposit = async(_address, _depositAmount) => {
         await this.protocolRequester.stake(_address, _depositAmount);
     }
 
@@ -38,10 +39,6 @@ export default class RequestManager {
         return await this.protocolRequester.getPoolStakedAmount(_address);
     }
 
-    getTokenBalance = async(_tokenId) => {
-        return await this.poolManagers[_tokenId].tokenRequester.getBalance();
-    }
-
     getPoolRewardAmount = async(_address) => {
         return await this.protocolRequester.getRewardAmount(_address);
     }
@@ -50,8 +47,12 @@ export default class RequestManager {
         await this.protocolRequester.claimPoolReward(_address);
     }
 
+    getPoolRewardPerSecond = async(_address) => {
+        return await this.protocolRequester.getPoolRewardPerSecond(_address);
+    }
+
     getProtocolEvents = () => {
-        return this.protocolInstance;
+        return this.protocolInstance.events;
     }
 
     getBaseEventOptions = async() => {

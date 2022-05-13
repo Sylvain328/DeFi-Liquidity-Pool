@@ -1,18 +1,27 @@
 import React, { Component } from "react";
 import DefiProtocol from "./contracts/DeFiProtocol.json";
 import HWT from "./contracts/HWT.json";
+import GUM from "./contracts/GUM.json";
+import ERC20 from "./contracts/ERC20.json";
+import AppContainer from "./components/AppContainer.js";
 import getWeb3 from "./getWeb3";
-import Header from "./components/Header.js";
-import GeneralData from "./components/GeneralData.js";
-import PoolContainer from "./components/PoolContainer.js";
-import PoolManager from "./manager/poolManager.js";
+
+import PoolManager from "./manager/poolManager";
 import RequestManager from "./manager/requestManager.js";
 
 import "./App.css";
 
 
 class App extends Component {
-  state = { storageValue: 0, web3: null, account: null, protocolInstance: null, isOwner: null, requestManager: null, poolManagers: null };
+  state = { storageValue: 0, 
+    web3: null, 
+    account: null, 
+    protocolInstance: null, 
+    isOwner: null, 
+    requestManager: null, 
+    poolManager: null,
+    hwtPrice: 0
+  };
 
   componentDidMount = async () => {
     try {
@@ -32,27 +41,42 @@ class App extends Component {
       
       // Get the HWT token instance
       const hwtDeployedNetwork = HWT.networks[networkId];
-      const tokenInstance = new web3.eth.Contract(
+      const hwtInstance = new web3.eth.Contract(
         HWT.abi,
         hwtDeployedNetwork && hwtDeployedNetwork.address,
       );
 
+      // Get the GUM token instance
+      const gumDeployedNetwork = GUM.networks[networkId];
+      const gumInstance = new web3.eth.Contract(
+        GUM.abi,
+        gumDeployedNetwork && gumDeployedNetwork.address,
+      );
+
+      
+      // Get the LINK token instance
+      var linkInstance = new web3.eth.Contract(ERC20.abi, '0xa36085F69e2889c224210F603D836748e7dC0088');
+
+      // Define account and check if it's the owner
       const owner = await protocolInstance.methods.owner().call();
       const account = accounts[0];
       const isOwner = owner === account;
 
-      const hwtAddress = tokenInstance._address;
-      const hwtPoolManager = await this.buildPoolManager(tokenInstance, protocolInstance, account,'HWT');
-      // const linkToken = this.buildPoolManager(protocolInstance, hwtlinkTokenToken.address, 'HWT');
-      // const flpToken = this.buildPoolManager(protocolInstance, flpToken.address, 'HWT');
-
-      const poolManagers = {1: hwtPoolManager};
-
       // Create the manager that will request the different contract requester and return data
       // For the events, we don't want to get the past events, only actual
-      const requestManager = new RequestManager(protocolInstance, poolManagers, account, async() => {
+      const requestManager = new RequestManager(protocolInstance, account, async() => {
         web3.eth.getBlockNumber();
       });
+
+      // Fake token price are fixed
+      const hwtTokenPrice = await requestManager.getHwtTokenUsdValue();
+      const flpTokenPrice = await requestManager.getFlpTokenUsdValue();
+
+      // Create pool manager and pool
+      const poolManager = new PoolManager(requestManager);
+      await poolManager.addNewPool(0, hwtInstance, account, true, hwtTokenPrice, 'HwtLogo');
+      await poolManager.addNewPool(1, gumInstance, account, true, flpTokenPrice, 'GumLogo');
+      await poolManager.addNewPool(2, linkInstance, account, false, 0, 'LinkLogo');
 
       // Set web3, accounts, and contract to the state, and then proceed with an
       // example of interacting with the contract's methods.
@@ -61,7 +85,9 @@ class App extends Component {
         isOwner: isOwner,
         protocolInstance: protocolInstance,
         requestManager: requestManager,
-        poolManagers: poolManagers});
+        poolManager: poolManager,
+        hwtPrice: hwtTokenPrice
+      });
     } catch (error) {
       // Catch any errors for any of the above operations.
       alert(
@@ -71,22 +97,13 @@ class App extends Component {
     }
   };
 
-  buildPoolManager = async(tokenInstance, protocolInstance, account, symbol) => {
-    return new PoolManager(tokenInstance, 
-      symbol, 
-      await protocolInstance.methods.getRewardPerSecond(tokenInstance._address).call({from: account}),
-      account);
-  }
-
   render() {
     if (!this.state.web3) {
       return <div>Loading Web3, accounts, and contract...</div>;
     }
     return (
       <div className="App">
-        <Header account={this.state.account} isOwner={this.state.isOwner} requestManager={this.state.requestManager} />
-        <GeneralData requestManager={this.state.requestManager}/>
-        <PoolContainer requestManager={this.state.requestManager} poolManagers={this.state.poolManagers} />
+        <AppContainer account={this.state.account} isOwner={this.state.isOwner} hwtPrice={this.state.hwtPrice}  poolManager={this.state.poolManager}/>
       </div>
     );
   }

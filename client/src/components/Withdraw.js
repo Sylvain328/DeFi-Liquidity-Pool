@@ -23,7 +23,7 @@ export default class DepositWithdraw extends React.Component {
     }
 
     recomputeTokenToWithdraw = (_sliderValue) => {
-        let withdrawAmount = Number.parseFloat(this.props.userStaked * (_sliderValue/ 100)).toFixed(4);
+        let withdrawAmount = Number.parseFloat(this.props.userStaked * (_sliderValue/ 100));
         this.setState({withdrawAmount: withdrawAmount, sliderValue: _sliderValue});
     }
 
@@ -34,13 +34,13 @@ export default class DepositWithdraw extends React.Component {
     render(){
         return(
             <div className='DepositWithdraw'>
-                <DataContainer containerClass='PoolDataContainer' indicatorTitle='Staked Amount : ' indicatorValue={this.props.userStaked} indicatorUnit='HWT'/>
+                <DataContainer containerClass='PoolDataContainer' indicatorTitle='Staked Amount : ' indicatorValue={this.props.userStaked} indicatorUnit={this.props.symbol}/>
                 <div className='SliderSelector'>
                     0%
-                    <input type="range" min="0" max="100" step="0.01" value={this.state.sliderValue} onChange={this.computeTokenToWithdraw}></input>
+                    <input type="range" min="0" max="100" step="0.0001" value={this.state.sliderValue} onChange={this.computeTokenToWithdraw}></input>
                     100%
                 </div>
-                <DataContainer containerClass='PoolDataContainer' indicatorTitle='Withdrawal : ' indicatorValue={this.state.withdrawAmount} indicatorUnit='HWT'/>
+                <DataContainer containerClass='PoolDataContainer' indicatorTitle='Withdrawal : ' indicatorValue={this.state.withdrawAmount} indicatorUnit={this.props.symbol}/>
                 <div className='DepositWithdrawButton' onClick={this.withdrawTokens}>Withdraw</div>
             </div>
         )

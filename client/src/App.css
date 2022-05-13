@@ -119,7 +119,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 50px;
+  gap: 100px;
 }
 
 .PoolStakedAmount {
@@ -455,4 +455,12 @@ input[type="range"]::-ms-fill-upper {
 
 .HwtLogo:before {
   content:url(./images/hwt.png);
+}
+
+.GumLogo:before {
+  content:url(./images/gum.png);
+}
+
+.LinkLogo:before {
+  content:url(./images/link.png);
 }

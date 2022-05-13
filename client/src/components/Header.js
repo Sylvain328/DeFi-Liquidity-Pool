@@ -2,14 +2,6 @@ import React from 'react';
 
 export default class Header extends React.Component {
 
-    state = {price: 0}
-
-    componentDidMount = async () => {
-        // Get the price of 1 HWT token
-        const price = await this.props.requestManager.getHwtTokenUsdValue(this.props.hwtTokenAddress);
-        this.setState({price: price});
-    }
-
     render(){
         return(
             <div className="Header">
@@ -19,7 +11,7 @@ export default class Header extends React.Component {
                 <div className='HeaderInfo'>
                     <div className='HwtConversion'>
                         <span>1 HWT</span>
-                        <span>{this.state.price} USD</span>
+                        <span>{this.props.hwtPrice} USD</span>
                     </div>
                     <div className='AccountData'>
                         <div>{this.props.account}</div>

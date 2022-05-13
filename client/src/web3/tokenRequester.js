@@ -17,4 +17,8 @@ export default class TokenRequester {
         console.log(process.versions)
         return await this.token.methods.approve(_contractAddress, RateConverter.convertToWei(_valueToStake)).send({from: this.account});
     }
+
+    getTokenSymbol = async() => {
+        return await this.token.methods.symbol().call();
+    }
 }

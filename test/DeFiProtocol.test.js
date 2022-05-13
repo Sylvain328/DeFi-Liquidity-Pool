@@ -62,7 +62,7 @@ contract('DeFiProtocol', accounts => {
                     const valueToStake = convertEthToWei(5);
                     await HwTokenInstance.approve(DeFiProtocolInstance.address, convertEthToWei(10), {from: owner});
                     
-                    expectEvent(await DeFiProtocolInstance.stake(HwTokenInstance.address, valueToStake, {from: owner}), "AmountStaked", {stakedAmount: new BN(valueToStake)});
+                    expectEvent(await DeFiProtocolInstance.stake(HwTokenInstance.address, valueToStake, {from: owner}), "StakedAmountUpdated", {stakedAmount: new BN(valueToStake)});
                 });
             });
         });
@@ -107,7 +107,7 @@ contract('DeFiProtocol', accounts => {
             describe("Event cases", () => {
 
                 it("should emit an event when amount is properly unstaked", async () => {
-                    expectEvent(await DeFiProtocolInstance.unstake(HwTokenInstance.address, convertEthToWei(5), {from: owner}), "AmountUnstaked", {unstakedAmount: new BN(convertEthToWei(0))});
+                    expectEvent(await DeFiProtocolInstance.unstake(HwTokenInstance.address, convertEthToWei(5), {from: owner}), "StakedAmountUpdated", {stakedAmount: new BN(convertEthToWei(0))});
                 });
             });
         });

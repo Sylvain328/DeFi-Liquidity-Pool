@@ -9,8 +9,8 @@ export default class GeneralData extends React.Component {
             <div className='GeneralDataContainer'>
                 <div className="flux">General data </div>
                 <div className='GeneralData'>
-                    <ProtocolData requestManager={this.props.requestManager} />
-                    <UserData requestManager={this.props.requestManager} />
+                    <ProtocolData allPoolsTvl={this.props.allPoolsTvl} />
+                    <UserData  allPoolsUserStakedUsd={this.props.allPoolsUserStakedUsd} allPoolsUserReward={this.props.allPoolsUserReward} allPoolsUserRewardUsd={this.props.allPoolsUserRewardUsd} />
                 </div>
             </div>
         )

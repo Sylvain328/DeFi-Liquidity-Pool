@@ -10,8 +10,8 @@ export default class PoolContainer extends React.Component {
                 <div className="flux">Liquidity pools</div>
                 <div className='PoolContainer'>
                     {
-                        Object.entries(this.props.poolManagers).map(([key,value])=>{
-                            return <LiquidityPool key={key} tokenId={key} tokenAddress={value.tokenAddress} requestManager={this.props.requestManager} symbol={value.symbol} />
+                        Object.entries(this.props.poolManager.pools).map(([key,value])=>{
+                            return <LiquidityPool key={key} liquidityPool={value} updateAllPoolsData={this.props.updateAllPoolsData} />
                         })
                     }
                 </div>
