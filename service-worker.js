@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 importScripts(
-  "/DeFi-Liquidity-Pool/precache-manifest.28c4b03e7847d5ac520514093d56400d.js"
+  "/DeFi-Liquidity-Pool/precache-manifest.931d89a48637ab2993d7533186d10870.js"
 );
 
 self.addEventListener('message', (event) => {

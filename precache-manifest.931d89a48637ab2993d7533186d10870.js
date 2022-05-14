@@ -1,10 +1,10 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "b835d5283967e03d2c6d615189d1b4ca",
+    "revision": "e28d4fa152aa4f18ddc56d26f6ef3ffd",
     "url": "/DeFi-Liquidity-Pool/index.html"
   },
   {
-    "revision": "a29da109b6cfc56e665e",
+    "revision": "ee531236b317f06bacf2",
     "url": "/DeFi-Liquidity-Pool/static/css/main.c623a60a.chunk.css"
   },
   {
@@ -12,8 +12,8 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/DeFi-Liquidity-Pool/static/js/2.11f87e8f.chunk.js"
   },
   {
-    "revision": "a29da109b6cfc56e665e",
-    "url": "/DeFi-Liquidity-Pool/static/js/main.b4c2307f.chunk.js"
+    "revision": "ee531236b317f06bacf2",
+    "url": "/DeFi-Liquidity-Pool/static/js/main.9a13b72a.chunk.js"
   },
   {
     "revision": "02a507fc5b8f65a774e6",
