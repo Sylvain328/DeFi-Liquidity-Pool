@@ -525,3 +525,7 @@ input[type="range"]::-ms-fill-upper {
 .Button[disabled]>.ButtonText{
   color: #898989;
 }
+
+.HideComponent {
+  display: none;
+}
