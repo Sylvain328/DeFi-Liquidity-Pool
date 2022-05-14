@@ -54,7 +54,7 @@ class App extends Component {
 
       
       // Get the LINK token instance
-      //var linkInstance = new web3.eth.Contract(ERC20.abi, '0xa36085F69e2889c224210F603D836748e7dC0088');
+      var linkInstance = new web3.eth.Contract(ERC20.abi, '0xa36085F69e2889c224210F603D836748e7dC0088');
 
       // Define account and check if it's the owner
       const owner = await protocolInstance.methods.owner().call();
@@ -75,7 +75,7 @@ class App extends Component {
       const poolManager = new PoolManager(protocolRequester);
       await poolManager.addNewPool(0, hwtInstance, account, true, hwtTokenPrice, 'HwtLogo');
       await poolManager.addNewPool(1, gumInstance, account, true, flpTokenPrice, 'GumLogo');
-      //await poolManager.addNewPool(2, linkInstance, account, false, 0, 'LinkLogo');
+      await poolManager.addNewPool(2, linkInstance, account, false, 0, 'LinkLogo');
 
       // Set web3, accounts, and contract to the state, and then proceed with an
       // example of interacting with the contract's methods.
