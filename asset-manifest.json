@@ -1,22 +1,22 @@
 {
   "files": {
     "main.css": "/DeFi-Liquidity-Pool/static/css/main.c623a60a.chunk.css",
-    "main.js": "/DeFi-Liquidity-Pool/static/js/main.a1d9b86c.chunk.js",
-    "main.js.map": "/DeFi-Liquidity-Pool/static/js/main.a1d9b86c.chunk.js.map",
+    "main.js": "/DeFi-Liquidity-Pool/static/js/main.b4c2307f.chunk.js",
+    "main.js.map": "/DeFi-Liquidity-Pool/static/js/main.b4c2307f.chunk.js.map",
     "runtime-main.js": "/DeFi-Liquidity-Pool/static/js/runtime-main.826460d9.js",
     "runtime-main.js.map": "/DeFi-Liquidity-Pool/static/js/runtime-main.826460d9.js.map",
-    "static/js/2.6d3bc500.chunk.js": "/DeFi-Liquidity-Pool/static/js/2.6d3bc500.chunk.js",
-    "static/js/2.6d3bc500.chunk.js.map": "/DeFi-Liquidity-Pool/static/js/2.6d3bc500.chunk.js.map",
+    "static/js/2.11f87e8f.chunk.js": "/DeFi-Liquidity-Pool/static/js/2.11f87e8f.chunk.js",
+    "static/js/2.11f87e8f.chunk.js.map": "/DeFi-Liquidity-Pool/static/js/2.11f87e8f.chunk.js.map",
     "index.html": "/DeFi-Liquidity-Pool/index.html",
-    "precache-manifest.a23ba93b7c5c024e1e6685e55d995915.js": "/DeFi-Liquidity-Pool/precache-manifest.a23ba93b7c5c024e1e6685e55d995915.js",
+    "precache-manifest.28c4b03e7847d5ac520514093d56400d.js": "/DeFi-Liquidity-Pool/precache-manifest.28c4b03e7847d5ac520514093d56400d.js",
     "service-worker.js": "/DeFi-Liquidity-Pool/service-worker.js",
     "static/css/main.c623a60a.chunk.css.map": "/DeFi-Liquidity-Pool/static/css/main.c623a60a.chunk.css.map",
     "static/media/App.css": "/DeFi-Liquidity-Pool/static/media/neon2.89c8113d.ttf"
   },
   "entrypoints": [
     "static/js/runtime-main.826460d9.js",
-    "static/js/2.6d3bc500.chunk.js",
+    "static/js/2.11f87e8f.chunk.js",
     "static/css/main.c623a60a.chunk.css",
-    "static/js/main.a1d9b86c.chunk.js"
+    "static/js/main.b4c2307f.chunk.js"
   ]
 }
