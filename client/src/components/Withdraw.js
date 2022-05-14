@@ -18,10 +18,10 @@ export default class DepositWithdraw extends React.Component {
         }
 
         // State of the button, to activate or disable it
-        if(this.props.userStaked === 0&& !this.state.isButtonLocked) {
+        if(this.state.withdrawAmount === 0 && !this.state.isButtonLocked) {
             this.setState({isButtonLocked: true});
         }
-        else if(this.props.userStaked > 0 && this.state.isButtonLocked) {
+        else if(this.state.withdrawAmount > 0 && this.state.isButtonLocked) {
             this.setState({isButtonLocked: false});
         } 
     }

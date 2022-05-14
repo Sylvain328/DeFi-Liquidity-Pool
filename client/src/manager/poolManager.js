@@ -12,6 +12,9 @@ export default class PoolManager {
         this.allPoolsRewardUsd = 0;
     }
 
+    /**
+     * Create pool liquidity
+     */
     addNewPool = async (_id, _tokenInstance, _account, _isFakeToken, _basePrice, _cssLogoClass) => {
 
         const pool = new LiquidityPool(this.protocolRequester, _tokenInstance, _account, _isFakeToken, _basePrice, _cssLogoClass);
@@ -20,6 +23,9 @@ export default class PoolManager {
         this.pools[_id] = pool;
     }
 
+    /**
+     * Compute All pools Data (TVL, total user Staked ...)
+     */
     recomputeAllGeneralData = () => {
 
         let tvl = 0;
@@ -29,7 +35,7 @@ export default class PoolManager {
 
         for (var pool in this.pools) {
             tvl += this.pools[pool].poolTvl * this.pools[pool].tokenPrice;
-            userUsdAmount += this.pools[pool].userStakedUsd;
+            userUsdAmount += this.pools[pool].userStaked * this.pools[pool].tokenPrice;
             userReward += this.pools[pool].userReward;
             userRewardUsd += this.pools[pool].userRewardUsd;
         };

@@ -274,7 +274,7 @@ export default class LiquidityPool extends React.Component {
                     <div className='RewardPoolTitle'>
                         <h3>Reward</h3>
                     </div>
-                    <DataContainer containerClass='PoolDataContainer' indicatorTitle='Reward HWT' indicatorValue={this.state.userReward.toFixed(2)} indicatorUnit='HWT'/>
+                    <DataContainer containerClass='PoolDataContainer' indicatorTitle='Reward HWT' indicatorValue={this.state.userReward.toFixed(8)} indicatorUnit='HWT'/>
                     <DataContainer containerClass='PoolDataContainer' indicatorTitle='Reward Value' indicatorValue={this.state.userRewardUsd.toFixed(2)} indicatorUnit='$'/>
                     <button type="Button" className={"Button " + this.state.rewardButtonClass} disabled={this.state.isRewardButtonLocked} onClick={this.claimReward}>
                         <span className="ButtonText">Claim reward</span>
