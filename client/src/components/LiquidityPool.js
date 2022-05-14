@@ -153,7 +153,6 @@ export default class LiquidityPool extends React.Component {
             if(event.returnValues[0] === this.state.liquidityPool.account &&
                event.returnValues[1] === this.state.liquidityPool.address) {
                 this.updateUserStakedAmount(RateConverter.convertToEth(event.returnValues[2]));  
-                //this.setState({buttonClass: ""});
             }
 
             // Refresh the pool TVL, even if the event isn't for this account
@@ -257,9 +256,9 @@ export default class LiquidityPool extends React.Component {
                 </div>
                 <div className="PoolStakedAmount">
                     <DataContainer containerClass='PoolDataContainer' indicatorTitle={'1 ' + this.state.symbol + ':'} indicatorValue={this.state.tokenPrice} indicatorUnit='$'/>
-                    <DataContainer containerClass='PoolDataContainer' indicatorTitle='TVL' indicatorValue={this.state.poolTvl} indicatorUnit={this.state.symbol}/>
+                    <DataContainer containerClass='PoolDataContainer' indicatorTitle='TVL' indicatorValue={this.state.poolTvl.toFixed(8)} indicatorUnit={this.state.symbol}/>
                     <DataContainer containerClass='PoolDataContainer' indicatorTitle='TVL $' indicatorValue={this.state.poolTvlUsd.toFixed(2)} indicatorUnit='$'/>
-                    <DataContainer containerClass='PoolDataContainer' indicatorTitle='User staked' indicatorValue={this.state.userStaked} indicatorUnit={this.state.symbol}/>
+                    <DataContainer containerClass='PoolDataContainer' indicatorTitle='User staked' indicatorValue={this.state.userStaked.toFixed(8)} indicatorUnit={this.state.symbol}/>
                     <DataContainer containerClass='PoolDataContainer' indicatorTitle='User staked $' indicatorValue={this.state.userStakedUsd.toFixed(2)} indicatorUnit='$'/>
                 </div>
                 <WithdrawDepositTabs>

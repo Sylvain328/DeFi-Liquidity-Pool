@@ -46,9 +46,11 @@ export default class LiquidityPool {
 
     /**
      * Update the user staked amount on the liquidity pool and refresh the balance
+     * Update also the user balance
      */
     updateUserStakedAmount = async(_amount) => {
         this.userStaked = _amount;
+        this.userStakedUsd = this.userStaked * this.tokenPrice;
         this.walletBalance = await this.tokenRequester.getBalance();
     }
 
