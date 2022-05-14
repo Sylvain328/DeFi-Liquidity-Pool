@@ -58,6 +58,7 @@ export default class LiquidityPool {
     updateUserReward = async() => {
         this.userReward = await this.protocolRequester.getRewardAmount(this.address);
         this.userRewardUsd = await this.userReward * this.tokenPrice;
+        return this.userReward;
     }
 
     /**

@@ -457,17 +457,17 @@ input[type="range"]::-ms-fill-upper {
   border: none;
   outline: none;
   border-radius: 5px;
-  cursor: pointer;
   width: 320px;
   font-size: 1em;
   margin-top: 10px;
 }
 
-.Button:hover {
-  background: #ed69a2;;
+.Button:not(.Button-loading):hover {
+  background: #ed69a2;
+  cursor: pointer;
 }
 
-.Button:active {
+.Button:active:not(.Button-loading) {
   background: #ed69a2;
 }
 
@@ -479,6 +479,7 @@ input[type="range"]::-ms-fill-upper {
 .Button-loading .ButtonText {
   visibility: hidden;
   opacity: 0;
+  cursor: default!important;
 }
 
 .Button-loading::after {
@@ -495,6 +496,7 @@ input[type="range"]::-ms-fill-upper {
   border-top-color: #ffffff;
   border-radius: 50%;
   animation: Button-loading-spinner 1s ease infinite;
+  cursor: default!important;
 }
 
 @keyframes Button-loading-spinner {
@@ -505,4 +507,21 @@ input[type="range"]::-ms-fill-upper {
   to {
     transform: rotate(1turn);
   }
+}
+
+.Button:disabled,
+.Button[disabled],
+.Button:disabled:hover,
+.Button[disabled]:hover,
+.Button:disabled::after,
+.Button[disabled]:after,
+.Button:disabled:active,
+.Button[disabled]:active {
+  background-color: #535353;
+  cursor: default !important;
+}
+
+.Button:disabled>.ButtonText,
+.Button[disabled]>.ButtonText{
+  color: #898989;
 }

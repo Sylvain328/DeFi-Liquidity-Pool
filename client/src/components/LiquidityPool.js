@@ -19,8 +19,10 @@ export default class LiquidityPool extends React.Component {
         userStakedUsd: 0, 
         userReward: 0, 
         userRewardUsd: 0,
-        buttonClass: "",
+        depositButtonClass: "",
+        withdrawButtonClass: "",
         rewardButtonClass: "",
+        isRewardButtonLocked: false,
     }
     
     componentDidMount = async() => {
@@ -46,10 +48,22 @@ export default class LiquidityPool extends React.Component {
         // Listen when reward are offered to refresh data
         this.listenRewardOfferedUpdatedEvent();
 
+        if(this.props.liquidityPool.userReward === 0) {
+            this.setState({isRewardButtonLocked: true});
+        }
+
         // Create a refresh interval for the reward amount
         this.refreshRewardInterval = setInterval(async () => {
-            await this.updateRewardAmount()
+            let reward = await this.updateRewardAmount()
             this.props.updateAllPoolsData();
+
+            // State of the reward button, to activate or disable it
+            if(reward === 0 && !this.state.isRewardButtonLocked) {
+                this.setState({isRewardButtonLocked: true});
+            }
+            else if(reward > 0 && this.state.isRewardButtonLocked) {
+                this.setState({isRewardButtonLocked: false});
+            } 
         }, 10000);     
     }
 
@@ -110,8 +124,9 @@ export default class LiquidityPool extends React.Component {
     }
 
     updateRewardAmount = async() => {
-        await this.state.liquidityPool.updateUserReward();
-        this.setState({userReward: this.state.liquidityPool.userReward, userRewardUsd: this.state.liquidityPool.userRewardUsd})
+        let reward = await this.state.liquidityPool.updateUserReward();
+        this.setState({userReward: this.state.liquidityPool.userReward, userRewardUsd: this.state.liquidityPool.userRewardUsd});
+        return reward;
     }
 
     recomputeUserStakedUsdAmount = async() => {
@@ -138,7 +153,7 @@ export default class LiquidityPool extends React.Component {
             if(event.returnValues[0] === this.state.liquidityPool.account &&
                event.returnValues[1] === this.state.liquidityPool.address) {
                 this.updateUserStakedAmount(RateConverter.convertToEth(event.returnValues[2]));  
-                this.setState({buttonClass: ""});
+                //this.setState({buttonClass: ""});
             }
 
             // Refresh the pool TVL, even if the event isn't for this account
@@ -169,7 +184,6 @@ export default class LiquidityPool extends React.Component {
                 this.updateRewardAmount();
                 // Refresh all pools data
                 this.props.updateAllPoolsData();
-                this.setState({rewardButtonClass: ""});
             }           
         });
     }
@@ -178,24 +192,59 @@ export default class LiquidityPool extends React.Component {
      * Deposit the amount selected by the user - Triggered when user click on the deposit button
      */
     depositTokens = async (_amount) => {
-        this.setState({buttonClass: "Button-loading"});
-        await this.state.liquidityPool.depositTokens(_amount);
+                
+        // If button is loading, user can't click again
+        if(this.state.depositButtonClass !== "Button-loading") {
+        
+            this.setState({depositButtonClass: "Button-loading"});
+
+            // If the action throw an exception, button come back to original state
+            try{
+                await this.state.liquidityPool.depositTokens(_amount);
+            }
+            finally{
+                this.setState({depositButtonClass: ""});
+            }
+        }
     }
 
     /**
      * Withdraw the amount selected by the user - Triggered when user click on the withdraw button
      */
     withdrawTokens = async (_amount) => {
-        this.setState({buttonClass: "Button-loading"});
-        await this.state.liquidityPool.withdrawTokens(_amount);
+        
+        // If button is loading, user can't click again
+        if(this.state.withdrawButtonClass !== "Button-loading") {
+
+            this.setState({withdrawButtonClass: "Button-loading"});
+            // If the action throw an exception, button come back to original state
+            try{
+                await this.state.liquidityPool.withdrawTokens(_amount);
+            }
+            finally {
+                this.setState({withdrawButtonClass: ""});
+            }
+        }
     }
 
     /**
      * Claim reward from the poll
      */
     claimReward = async () => {
-        this.setState({rewardButtonClass: "Button-loading"});
-        await this.state.liquidityPool.claimReward();
+        
+        // If button is loading, user can't click again
+        if(this.state.rewardButtonClass !== "Button-loading") {
+            this.setState({rewardButtonClass: "Button-loading"});
+
+            // If the action throw an exception, button come back to original state
+            try {
+                await this.state.liquidityPool.claimReward();
+            }
+            finally {
+                this.setState({rewardButtonClass: ""});
+                this.setState({isRewardButtonLocked: true});
+            }
+        }
     }
 
     render(){
@@ -215,10 +264,10 @@ export default class LiquidityPool extends React.Component {
                 </div>
                 <WithdrawDepositTabs>
                     <div label='Deposit'>
-                        <Deposit walletBalance={this.state.walletBalance} depositTokens={this.depositTokens} symbol={this.state.symbol} buttonClass={this.state.buttonClass}/>
+                        <Deposit walletBalance={this.state.walletBalance} depositTokens={this.depositTokens} symbol={this.state.symbol} buttonClass={this.state.depositButtonClass}/>
                     </div>
                     <div label='Withdraw'>
-                        <Withdraw userStaked={this.state.userStaked} withdrawTokens={this.withdrawTokens} symbol={this.state.symbol} buttonClass={this.state.buttonClass}/>
+                        <Withdraw userStaked={this.state.userStaked} withdrawTokens={this.withdrawTokens} symbol={this.state.symbol} buttonClass={this.state.withdrawButtonClass}/>
                     </div>
                 </WithdrawDepositTabs>
                 <div className='RewardContent'>
@@ -227,7 +276,7 @@ export default class LiquidityPool extends React.Component {
                     </div>
                     <DataContainer containerClass='PoolDataContainer' indicatorTitle='Reward HWT' indicatorValue={this.state.userReward.toFixed(2)} indicatorUnit='HWT'/>
                     <DataContainer containerClass='PoolDataContainer' indicatorTitle='Reward Value' indicatorValue={this.state.userRewardUsd.toFixed(2)} indicatorUnit='$'/>
-                    <button type="Button" className={"Button " + this.state.rewardButtonClass} disabled={this.state.isButtonLocked} onClick={this.claimReward}>
+                    <button type="Button" className={"Button " + this.state.rewardButtonClass} disabled={this.state.isRewardButtonLocked} onClick={this.claimReward}>
                         <span className="ButtonText">Claim reward</span>
                     </button>
                 </div>

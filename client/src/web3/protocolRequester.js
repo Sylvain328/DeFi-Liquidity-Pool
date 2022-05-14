@@ -48,9 +48,9 @@ export default class ProtocolRequester {
         await this.contract.methods.claimReward(_address).send({from: this.account});
     }
 
-    /** Get the pool reward per second */
+    /** Get the pool reward per second in % */
     getPoolRewardPerSecond = async(_address) => {
-        return RateConverter.convertToEth(await this.contract.methods.getRewardPerSecond(_address).call({from: this.account}));
+        return RateConverter.convertToEth(await this.contract.methods.getRewardPerSecond(_address).call({from: this.account})) * 100;
     }
 
     /**

@@ -3,7 +3,7 @@ import DataContainer from "./DataContainer.js";
 
 export default class DepositWithdraw extends React.Component {
 
-    state = {sliderValue: 50, withdrawAmount: 0};
+    state = {sliderValue: 50, withdrawAmount: 0, isButtonLocked: false};
 
     componentDidMount = async () => {
         // Set the balance and initialize the slider
@@ -16,15 +16,33 @@ export default class DepositWithdraw extends React.Component {
         if (prevProps.userStaked !== this.props.userStaked) {
             this.recomputeTokenToWithdraw(this.state.sliderValue);
         }
+
+        // State of the button, to activate or disable it
+        if(this.props.userStaked === 0&& !this.state.isButtonLocked) {
+            this.setState({isButtonLocked: true});
+        }
+        else if(this.props.userStaked > 0 && this.state.isButtonLocked) {
+            this.setState({isButtonLocked: false});
+        } 
     }
 
     computeTokenToWithdraw = (event) => {
-        this.recomputeTokenToWithdraw(event.target.value);
+
+        let computedAmount = this.recomputeTokenToWithdraw(event.target.value);
+
+        // State of the button, to activate or disable it
+        if(computedAmount === 0 && !this.state.isButtonLocked) {
+            this.setState({isButtonLocked: true});
+        }
+        else if(computedAmount > 0 && this.state.isButtonLocked) {
+            this.setState({isButtonLocked: false});
+        } 
     }
 
     recomputeTokenToWithdraw = (_sliderValue) => {
         let withdrawAmount = Number.parseFloat(this.props.userStaked * (_sliderValue/ 100));
         this.setState({withdrawAmount: withdrawAmount, sliderValue: _sliderValue});
+        return withdrawAmount;
     }
 
     withdrawTokens = async () => {

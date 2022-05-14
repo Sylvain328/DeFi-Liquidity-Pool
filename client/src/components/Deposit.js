@@ -6,15 +6,29 @@ export default class DepositWithdraw extends React.Component {
     state = { sliderValue: 50, depositAmount: 0, isButtonLocked: false };
 
     componentDidMount = async () => {
+        
         // Set the balance and initialize the slider
         this.setState({walletBalance: this.props.walletBalance, buttonClass: ""});
         this.recomputeTokenToDeposit(this.state.sliderValue);
+
+        // Lock the button if there is a zero balance
+        if(this.props.walletBalance === 0) {
+            this.setState({isButtonLocked: true});
+        }
     }
 
     componentDidUpdate(prevProps, prevState) {
         // If an external event update the walletBalance, the tokenToDeposit Amount have to be recomputed
         if (prevProps.walletBalance !== this.props.walletBalance) {
             this.recomputeTokenToDeposit(this.state.sliderValue);
+
+            // State of the button, to activate or disable it
+        if(this.props.walletBalance === 0 && !this.state.isButtonLocked) {
+            this.setState({isButtonLocked: true});
+        }
+        else if(this.props.walletBalance > 0 && this.state.isButtonLocked) {
+            this.setState({isButtonLocked: false});
+        } 
         }
     }
 
@@ -22,7 +36,15 @@ export default class DepositWithdraw extends React.Component {
      * Compute the token to deposit - Triggered when the user move the slider
      */
     computeTokenAmount = (event) => {
-        this.recomputeTokenToDeposit(event.target.value);
+        let computedAmount = this.recomputeTokenToDeposit(event.target.value);
+
+        // State of the button, to activate or disable it
+        if(computedAmount === 0 && !this.state.isButtonLocked) {
+            this.setState({isButtonLocked: true});
+        }
+        else if(computedAmount > 0 && this.state.isButtonLocked) {
+            this.setState({isButtonLocked: false});
+        } 
     }
 
     /**
@@ -31,6 +53,7 @@ export default class DepositWithdraw extends React.Component {
     recomputeTokenToDeposit= (_sliderValue) => {
         let computeAmount = Number.parseFloat(this.props.walletBalance * (_sliderValue / 100));
         this.setState({depositAmount: computeAmount, sliderValue: _sliderValue});
+        return computeAmount;
     }
 
     /**
@@ -38,10 +61,6 @@ export default class DepositWithdraw extends React.Component {
      */
     depositTokens = async () => {
         await this.props.depositTokens(this.state.depositAmount);     
-    }
-
-    clickTest = () => {
-        this.setState({isButtonLocked: true, buttonClass: 'Button-loading'})
     }
 
     render(){
@@ -55,7 +74,7 @@ export default class DepositWithdraw extends React.Component {
                 </div>
                 <DataContainer containerClass='PoolDataContainer' indicatorTitle='Deposit : ' indicatorValue={this.state.depositAmount} indicatorUnit={this.props.symbol}/>
             
-                <button type="Button" className={"Button " + this.props.buttonClass} disabled={this.state.isButtonLocked} onClick={this.depositTokens}>
+                <button type="Button" className={"Button " + this.props.buttonClass} onClick={this.depositTokens.bind(this)} disabled={this.state.isButtonLocked}>
                     <span className="ButtonText">Deposit</span>
                 </button>
             </div>

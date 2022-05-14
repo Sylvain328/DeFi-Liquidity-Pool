@@ -18,10 +18,10 @@ module.exports = function(deployer, network, accounts) {
 
     // Create liquidity pools
     // hwt token
-    await DeFiProtocolInstance.createLiquidityPool(hwtTokenInstance.address, hwtTokenInstance.address, 92592592525925, {from: accounts[0]});
+    await DeFiProtocolInstance.createLiquidityPool(hwtTokenInstance.address, hwtTokenInstance.address, 925925925259, {from: accounts[0]});
 
     // gum token
-    await DeFiProtocolInstance.createLiquidityPool(gumTokenInstance.address, gumTokenInstance.address, 57870370370370, {from: accounts[0]});
+    await DeFiProtocolInstance.createLiquidityPool(gumTokenInstance.address, gumTokenInstance.address, 578703703703, {from: accounts[0]});
 
     // link token - with chainlink feed address for price
     await DeFiProtocolInstance.createLiquidityPool('0xa36085F69e2889c224210F603D836748e7dC0088', '0x396c5E36DD0a0F5a5D33dae44368D4193f69a1F0', 34722222222222, {from: accounts[0]});
