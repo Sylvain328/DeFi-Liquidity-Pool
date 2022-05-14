@@ -6,6 +6,6 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract GUM is ERC20 {
     constructor() ERC20("Gum Token", "GUM") {
-        _mint(msg.sender, 100 * 1e18);
+        _mint(msg.sender, 300 * 1e18);
     }
 }
